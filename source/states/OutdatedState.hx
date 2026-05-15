@@ -16,7 +16,7 @@ class OutdatedState extends MusicBeatState
 
 		if (controls.mobileC)
 		{
-			guh = "Sup kiddo, looks like you're running an   \n
+			guh = "Sup bro, looks like you're running an   \n
 			outdated version of Psych Engine (" + MainMenuState.psychEngineVersion + "),\n
 			please update to " + TitleState.updateVersion + "!\n
 			Press B to proceed anyway.\n
@@ -59,7 +59,7 @@ class OutdatedState extends MusicBeatState
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				FlxTween.tween(warnText, {alpha: 0}, 1, {
 					onComplete: function (twn:FlxTween) {
-						MusicBeatState.switchState(new MainMenuState());
+						MusicBeatState.switchState(new BetaState());
 					}
 				});
 			}
