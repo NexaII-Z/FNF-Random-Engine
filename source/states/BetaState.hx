@@ -42,6 +42,8 @@ class OutdatedState extends MusicBeatState
 		if(!leftState) {
 			if (controls.ACCEPT)
 			{
+				leftState = true;
+			}
 
 			if(leftState)
 			{
