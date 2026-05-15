@@ -11,6 +11,10 @@ import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
 import haxe.Json;
 
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
+import flixel.math.FlxMath;
+
 import openfl.Assets;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
@@ -182,6 +186,11 @@ class TitleState extends MusicBeatState
 	var titleText:FlxSprite;
 	var swagShader:ColorSwap = null;
 
+	// Logo bumpin vars
+	var logoBaseY:Float    = 0;
+	var logoBumpScale:Float = 1.0;
+	var logoBumping:Bool   = false;
+
 	function startIntro()
 	{
 		if (!initialized)
@@ -214,8 +223,11 @@ class TitleState extends MusicBeatState
 		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24, false);
 		logoBl.animation.play('bump');
 		logoBl.updateHitbox();
-		// logoBl.screenCenter();
-		// logoBl.color = FlxColor.BLACK;
+
+		// Store base Y and kick off idle bob tween
+		logoBaseY = titleJSON.titley;
+		FlxTween.tween(logoBl, {y: logoBaseY + 30}, 0.7,
+			{ease: FlxEase.sineInOut, type: PINGPONG});
 
 		if(ClientPrefs.data.shaders) swagShader = new ColorSwap();
 		gfDance = new FlxSprite(titleJSON.gfx, titleJSON.gfy);
@@ -531,7 +543,24 @@ class TitleState extends MusicBeatState
 		super.beatHit();
 
 		if(logoBl != null)
+		{
 			logoBl.animation.play('bump', true);
+
+			// Cancel any running bump tweens then do a scale pop + angle rock
+			FlxTween.cancelTweensOf(logoBl, ['scale.x', 'scale.y', 'angle']);
+
+			// Scale pop: punch up then settle back
+			logoBl.scale.set(1.1, 1.1);
+			FlxTween.tween(logoBl.scale, {x: 1.0, y: 1.0}, 0.3,
+				{ease: FlxEase.elasticOut});
+
+			// Angle rock: alternate left-right each beat
+			var targetAngle:Float = (danceLeft ? 1 : -1) * 4;
+			FlxTween.tween(logoBl, {angle: targetAngle}, 0.25,
+				{ease: FlxEase.sineOut, onComplete: function(t) {
+					FlxTween.tween(logoBl, {angle: 0}, 0.35, {ease: FlxEase.sineInOut});
+				}});
+		}
 
 		if(gfDance != null) {
 			danceLeft = !danceLeft;
