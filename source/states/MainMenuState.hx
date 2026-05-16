@@ -4,7 +4,7 @@ import flixel.FlxObject;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.effects.FlxFlicker;
 import lime.app.Application;
-import substates.MasterEditorMenu;
+import states.editors.MasterEditorMenu;
 import options.OptionsState;
 
 class MainMenuState extends MusicBeatState
@@ -191,7 +191,7 @@ class MainMenuState extends MusicBeatState
 			else if (controls.justPressed('debug_1') || touchPad.buttonE.justPressed)
 			{
 				selectedSomethin = true;
-                openSubState(new MasterEditorMenu());
+				MusicBeatState.switchState(new MasterEditorMenu());
 			}
 			else if (touchPad.buttonM.justPressed)
 			{
@@ -246,7 +246,7 @@ class MainMenuState extends MusicBeatState
 			else if (controls.justPressed('debug_1'))
 			{
 				selectedSomethin = true;
-				openSubState(new MasterEditorMenu());
+				MusicBeatState.switchState(new MasterEditorMenu());
 			}
 			else if (FlxG.keys.justPressed.TAB)
 			{
