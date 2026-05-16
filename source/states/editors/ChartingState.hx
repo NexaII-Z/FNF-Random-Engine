@@ -1,4 +1,4 @@
-package states.editors;
+package substates;
 
 import flash.geom.Rectangle;
 import haxe.Json;
@@ -36,9 +36,6 @@ import objects.NoteSplash;
 import objects.HealthIcon;
 import objects.AttachedSprite;
 import objects.Character;
-import substates.Prompt;
-import substates.MasterEditorMenu;
-
 
 #if sys
 import flash.media.Sound;
