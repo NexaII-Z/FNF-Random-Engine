@@ -16,6 +16,9 @@ This Engine Is Solo Dev, Poor Dev...
 * Erect + Nightmare Mixes
 * V-slice Chart Reader
 * Psych Chart To V-slice Chart Converter
+* Play Vid When Gameover in chart editor is now a thing! Instead Of Scripting.
+* New Main Menu UI
+* Freeplay added character Select 
 * alot coming in the feature
 
 ## Random Credits:
