@@ -1,6 +1,6 @@
-# Friday Night Funkin' - Psych Engine v0.7.3 Template
+# Friday Night Funkin' - Random Engine
 
-This Template for Making any Mods and Engines you want, with Mobile Support.
+A Modding Engine That Adds Uniqe Featuers To The Game.
 
 ![special](docs/img/special.png)
 
@@ -14,7 +14,8 @@ to start you off, disabling Videos should be simple, simply Delete the line `"VI
 
 same goes for *Lua Scripts*, comment out or delete the line with `LUA_ALLOWED`, this and other customization options are all available within the `Project.xml` file
 
-## Template Credits:
+## Random Credits:
+* NexaII-Z - Random Engine Owner.
 * Ali Alafandy - Templator.
 
 ## Mobile Credits:
@@ -46,6 +47,16 @@ _____________________________________
 
 # Features
 
+# Random Engine Features
+* New Stage Editor
+* Weekend1
+* New Ui For States [no editors]
+* alot in the feature
+* Pico Mixes
+* Erect + Nightmare Mixes
+* V-slice Chart Reader
+* Psych Chart To V-slice Chart Converter
+* alot coming in the feature
 ## Attractive animated dialogue boxes:
 
 ![](https://user-images.githubusercontent.com/44785097/127706669-71cd5cdb-5c2a-4ecc-871b-98a276ae8070.gif)
