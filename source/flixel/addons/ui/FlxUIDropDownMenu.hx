@@ -199,8 +199,8 @@ class FlxUIDropDownMenu extends FlxUIGroup implements IFlxUIWidget implements IF
 		var panelH:Int  = getPanelHeight();
 		if (panelH < 4) panelH = 4;
 
-		dropPanel.makeGraphic(panelW, panelH, FlxColor.TRANSPARENT, false,
-			"nexDD_panel_" + panelW + "_" + panelH);
+		// Always force redraw (unique:true) so resizing never serves a stale cached graphic
+		dropPanel.makeGraphic(panelW, panelH, FlxColor.TRANSPARENT, true);
 
 		// Dark background
 		FlxSpriteUtil.drawRect(dropPanel, 0, 0, panelW, panelH, PANEL_BG);
@@ -285,6 +285,8 @@ class FlxUIDropDownMenu extends FlxUIGroup implements IFlxUIWidget implements IF
 					{
 						btn.label.text = data.label;
 						list[i].name   = data.name;
+						var capturedI:Int = i;
+						list[i].onUp.callback = function() { onClickItem(capturedI); };
 						recycled       = true;
 					}
 				}
@@ -328,9 +330,10 @@ class FlxUIDropDownMenu extends FlxUIGroup implements IFlxUIWidget implements IF
 	// ─── Row button factory ─────────────────────────────────────────────
 	private function makeListButton(i:Int, Label:String, Name:String):FlxUIButton
 	{
+		var capturedIndex:Int = i; // capture by value, not reference
 		var t:FlxUIButton = new FlxUIButton(0, 0, Label);
 		t.broadcastToFlxUI = false;
-		t.onUp.callback    = onClickItem.bind(i);
+		t.onUp.callback    = function() { onClickItem(capturedIndex); };
 		t.name             = Name;
 
 		// Custom graphic: dark row with hover highlight
