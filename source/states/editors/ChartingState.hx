@@ -1,4 +1,4 @@
-package substates;
+package states.editors;
 
 import flash.geom.Rectangle;
 import haxe.Json;
@@ -36,6 +36,8 @@ import objects.NoteSplash;
 import objects.HealthIcon;
 import objects.AttachedSprite;
 import objects.Character;
+import substates.Prompt;
+
 
 #if sys
 import flash.media.Sound;
@@ -2016,7 +2018,7 @@ class ChartingState extends MusicBeatState
 				// Protect against lost data when quickly leaving the chart editor.
 				autosaveSong();
 				PlayState.chartingMode = false;
-                openSubState(new MasterEditorMenu());
+				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				FlxG.mouse.visible = false;
 				return;
@@ -2026,7 +2028,7 @@ class ChartingState extends MusicBeatState
 				// Protect against lost data when quickly leaving the chart editor.
 				autosaveSong();
 				PlayState.chartingMode = false;
-                openSubState(new MasterEditorMenu());
+				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				FlxG.mouse.visible = false;
 				return;
