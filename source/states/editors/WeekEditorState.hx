@@ -817,13 +817,13 @@ class WeekEditorFreeplayState extends MusicBeatState
 			#if mobile
 			if(FlxG.keys.justPressed.ESCAPE || touchPad.buttonB.justPressed)
 			{
-				MusicBeatState.switchState(new MasterEditorMenu());
+				openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			#else
 			if(FlxG.keys.justPressed.ESCAPE)
 			{
-				MusicBeatState.switchState(new MasterEditorMenu());
+				openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			#end
