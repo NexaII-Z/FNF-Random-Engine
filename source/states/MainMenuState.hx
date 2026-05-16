@@ -191,7 +191,7 @@ class MainMenuState extends MusicBeatState
 			else if (controls.justPressed('debug_1') || touchPad.buttonE.justPressed)
 			{
 				selectedSomethin = true;
-				MusicBeatState.switchState(new MasterEditorMenu());
+                openSubState(new MasterEditorMenu());
 			}
 			else if (touchPad.buttonM.justPressed)
 			{
