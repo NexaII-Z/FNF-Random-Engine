@@ -452,11 +452,12 @@ class FlxInputText extends FlxText
 		if (fieldBorderSprite != null && fieldBorderThickness > 0)
 		{
 			var bw:Int = Std.int(width  + fieldBorderThickness * 2);
-			var bh:Int = Std.int(Math.max(height + fieldBorderThickness * 2, MIN_HEIGHT + fieldBorderThickness * 2));
+			var bh:Int = Std.int(height + fieldBorderThickness * 2);
+			if (bh < 4) bh = 4;
 			var borderCol:Int = hasFocus ? THEME_BORDER_FOCUS : THEME_BORDER_IDLE;
 
-			fieldBorderSprite.makeGraphic(bw, bh, FlxColor.TRANSPARENT, false,
-				"nexInput_border_" + bw + "_" + bh + "_" + borderCol);
+			// Use 'true' to force redraw so focus color always updates
+			fieldBorderSprite.makeGraphic(bw, bh, FlxColor.TRANSPARENT, true);
 			FlxSpriteUtil.drawRoundRect(fieldBorderSprite, 0, 0, bw, bh,
 				CORNER_RADIUS * 2, CORNER_RADIUS * 2, borderCol);
 
@@ -474,9 +475,9 @@ class FlxInputText extends FlxText
 			if (background)
 			{
 				var bw2:Int = Std.int(width);
-				var bh2:Int = Std.int(Math.max(height, MIN_HEIGHT));
-				backgroundSprite.makeGraphic(bw2, bh2, FlxColor.TRANSPARENT, false,
-					"nexInput_bg_" + bw2 + "_" + bh2);
+				var bh2:Int = Std.int(height);
+				if (bh2 < 4) bh2 = 4;
+				backgroundSprite.makeGraphic(bw2, bh2, FlxColor.TRANSPARENT, true);
 				FlxSpriteUtil.drawRoundRect(backgroundSprite, 0, 0, bw2, bh2,
 					CORNER_RADIUS * 2 - 2, CORNER_RADIUS * 2 - 2, backgroundColor);
 				backgroundSprite.x = x;
