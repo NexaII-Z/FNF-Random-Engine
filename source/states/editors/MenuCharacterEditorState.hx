@@ -13,6 +13,7 @@ import flash.net.FileFilter;
 import haxe.Json;
 
 import objects.MenuCharacter;
+import substates.MasterEditorMenu;
 
 class MenuCharacterEditorState extends MusicBeatState
 {
@@ -275,13 +276,13 @@ class MenuCharacterEditorState extends MusicBeatState
 			#end
 			|| touchPad.buttonB.justPressed)
 			{
-				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+				MusicBeatState.openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			#else
 			if(FlxG.keys.justPressed.ESCAPE)
 			{
-				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+				MusicBeatState.openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			#end
