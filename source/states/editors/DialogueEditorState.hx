@@ -17,8 +17,6 @@ import objects.TypedAlphabet;
 import cutscenes.DialogueBoxPsych;
 import cutscenes.DialogueCharacter;
 
-import substates.MasterEditorMenu;
-
 class DialogueEditorState extends MusicBeatState
 {
 	var character:DialogueCharacter;
@@ -369,14 +367,14 @@ class DialogueEditorState extends MusicBeatState
 			#if mobile
 			if(FlxG.keys.justPressed.ESCAPE || touchPad.buttonB.justPressed)
 			{
-				MusicBeatState.openSubState(new MasterEditorMenu());
+				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'), 1);
 				transitioning = true;
 			}
 			#else
 			if(FlxG.keys.justPressed.ESCAPE)
 			{
-				MusicBeatState.openSubState(new MasterEditorMenu());
+				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'), 1);
 				transitioning = true;
 			}
