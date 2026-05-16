@@ -246,7 +246,7 @@ class MainMenuState extends MusicBeatState
 			else if (controls.justPressed('debug_1'))
 			{
 				selectedSomethin = true;
-				openSubState(new MasterEditorMenu());
+				openSubState(new MasterEditorMenuSubState());
 			}
 			else if (FlxG.keys.justPressed.TAB)
 			{
