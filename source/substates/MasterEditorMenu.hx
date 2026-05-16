@@ -6,14 +6,14 @@ import objects.Character;
 
 import states.MainMenuState;
 import states.FreeplayState;
-import states.editors.ChartingState
-import states.editors.CharacterEditorState
-import states.editors.StageEditorState
-import states.editors.WeekEditorState
-import states.editors.MenuCharacterEditorState
-import states.editors.DialogueEditorState
-import states.editors.DialogueCharacterEditorState
-import states.editors.NoteSplashDebugState
+import states.editors.ChartingState;
+import states.editors.CharacterEditorState;
+import states.editors.StageEditorState;
+import states.editors.WeekEditorState;
+import states.editors.MenuCharacterEditorState;
+import states.editors.DialogueEditorState;
+import states.editors.DialogueCharacterEditorState;
+import states.editors.NoteSplashDebugState;
 
 class MasterEditorMenu extends MusicBeatSubstate
 {
