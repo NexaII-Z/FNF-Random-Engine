@@ -5,6 +5,7 @@ import objects.StrumNote;
 import objects.NoteSplash;
 import flixel.addons.ui.FlxInputText;
 import flixel.addons.ui.FlxUINumericStepper;
+import substates.MasterEditorMenu;
 
 class NoteSplashDebugState extends MusicBeatState
 {
@@ -208,7 +209,7 @@ class NoteSplashDebugState extends MusicBeatState
 		var notTyping:Bool = !nameInputText.hasFocus && !imageInputText.hasFocus;
 		if(controls.BACK && notTyping)
 		{
-			MusicBeatState.switchState(new MasterEditorMenu());
+			MusicBeatState.openSubState(new MasterEditorMenu());
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			FlxG.mouse.visible = false;
 		}
