@@ -23,7 +23,7 @@ import objects.HealthIcon;
 import objects.MenuCharacter;
 import objects.MenuItem;
 
-import states.editors.MasterEditorMenu;
+import substates.MasterEditorMenu;
 
 class WeekEditorState extends MusicBeatState
 {
@@ -439,13 +439,13 @@ class WeekEditorState extends MusicBeatState
 			#if mobile
 			if(FlxG.keys.justPressed.ESCAPE || touchPad.buttonB.justPressed)
 			{
-				MusicBeatState.switchState(new MasterEditorMenu());
+				MusicBeatState.openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			#else
 			if(FlxG.keys.justPressed.ESCAPE)
 			{
-				MusicBeatState.switchState(new MasterEditorMenu());
+				MusicBeatState.openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			#end
