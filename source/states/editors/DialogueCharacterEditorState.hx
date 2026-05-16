@@ -19,7 +19,7 @@ import objects.TypedAlphabet;
 import cutscenes.DialogueBoxPsych;
 import cutscenes.DialogueCharacter;
 
-import.substates.MasterEditorMenu;
+import substates.MasterEditorMenu;
 
 class DialogueCharacterEditorState extends MusicBeatState
 {
