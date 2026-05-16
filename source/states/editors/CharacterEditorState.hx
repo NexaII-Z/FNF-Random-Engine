@@ -1124,7 +1124,7 @@ class CharacterEditorState extends MusicBeatState
 			FlxG.mouse.visible = false;
 			if(!_goToPlayState)
 			{
-				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+                            openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			else MusicBeatState.switchState(new PlayState());
@@ -1149,7 +1149,7 @@ class CharacterEditorState extends MusicBeatState
 			FlxG.mouse.visible = false;
 			if(!_goToPlayState)
 			{
-				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+                            openSubState(new MasterEditorMenu());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			else MusicBeatState.switchState(new PlayState());
