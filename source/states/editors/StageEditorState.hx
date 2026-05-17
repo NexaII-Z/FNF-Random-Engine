@@ -4,7 +4,7 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
 import flixel.group.FlxGroup;
-import flixel.group.FlxTypedGroup;
+import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
@@ -47,7 +47,7 @@ class StageEditorState extends MusicBeatState
 
 	// ── Scene ────────────────────────────────────────────────────────────────
 	var stageBG:FlxSprite;
-	var spriteLayer:FlxTypedGroup<FlxSprite>;
+	var spriteLayer:FlxSpriteGroup;
 	var dadChar:Character;
 	var bfChar:Character;
 	var gfChar:Character;
@@ -113,7 +113,7 @@ class StageEditorState extends MusicBeatState
 		stageBG.cameras = [editorCam];
 		add(stageBG);
 
-		spriteLayer = new FlxTypedGroup<FlxSprite>();
+		spriteLayer = new FlxSpriteGroup();
 		spriteLayer.cameras = [editorCam];
 		add(spriteLayer);
 
@@ -459,10 +459,10 @@ class StageEditorState extends MusicBeatState
 		if (path.length == 0) { showError('Enter an image path!'); return; }
 		path = stripSlash(path);
 
-		if (!openfl.utils.Assets.exists(Paths.image(path)))
+		if (!openfl.utils.Assets.exists(Paths.getSharedPath('images/' + path + '.png')))
 		{ showError('PNG not found:\nimages/' + path + '.png'); return; }
 
-		if (!openfl.utils.Assets.exists(Paths.file('images/' + path + '.xml')))
+		if (!openfl.utils.Assets.exists(Paths.getSharedPath('images/' + path + '.xml')))
 		{ showError('XML not found:\nimages/' + path + '.xml\nThe PNG and XML must have the same name!'); return; }
 
 		var spr = new FlxSprite(200, 200);
@@ -479,7 +479,7 @@ class StageEditorState extends MusicBeatState
 		if (path.length == 0) { showError('Enter an image path!'); return; }
 		path = stripSlash(path);
 
-		if (!openfl.utils.Assets.exists(Paths.image(path)))
+		if (!openfl.utils.Assets.exists(Paths.getSharedPath('images/' + path + '.png')))
 		{ showError('PNG not found:\nimages/' + path + '.png'); return; }
 
 		var spr = new FlxSprite(200, 200);
@@ -564,7 +564,7 @@ class StageEditorState extends MusicBeatState
 		if (FlxG.keys.justPressed.ESCAPE)
 		{
 			FlxG.mouse.visible = false;
-			MusicBeatState.switchState(new MainMenuState());
+			MusicBeatState.switchState(new MasterEditorMenu());
 		}
 		#end
 
@@ -585,7 +585,7 @@ class StageEditorState extends MusicBeatState
 		if (touchPad != null && touchPad.buttonB.justPressed)
 		{
 			FlxG.mouse.visible = false;
-			MusicBeatState.switchState(new MainMenuState());
+			MusicBeatState.switchState(new MasterEditorMenu());
 		}
 		#end
 	}
