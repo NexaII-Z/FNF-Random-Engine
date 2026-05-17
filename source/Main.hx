@@ -128,8 +128,8 @@ class Main extends Sprite
 
 		// Global Mouse Cursor Injection
 		try {
-			if (Assets.exists("assets/images/my_cursor.png")) {
-				FlxG.mouse.load(Assets.getBitmapData("assets/images/my_cursor.png"));
+			if (Assets.exists("assets/shared/images/cursor-default.png")) {
+				FlxG.mouse.load(Assets.getBitmapData("assets//shared/images/cursor-default.png"));
 			}
 		} catch(e:haxe.Exception) {
 			trace("Could not load custom mouse graphics: " + e.message);
