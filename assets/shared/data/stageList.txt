@@ -8,5 +8,4 @@ school
 schoolEvil
 tank
 streets
-streetsErect
 streetsBlazin
