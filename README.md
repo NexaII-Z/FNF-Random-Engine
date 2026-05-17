@@ -18,7 +18,8 @@ This Engine Is Solo Dev, Poor Dev...
 * Psych Chart To V-slice Chart Converter
 * Play Vid When Gameover in chart editor is now a thing! Instead Of Scripting.
 * New Main Menu UI
-* Freeplay added character Select 
+* Freeplay added character Select
+* NoteSkin Selector (ui refrence by https://gamebanana.com/members/2112708)
 * alot coming in the feature
 
 ## Random Credits:
