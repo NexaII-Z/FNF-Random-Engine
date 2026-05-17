@@ -12,6 +12,7 @@ import sys.thread.Mutex;
 class OptionsState extends MusicBeatState
 {
 	var options:Array<String> = [
+		'Note Skins',
 		'Note Colors',
 		'Controls',
 		'Adjust Delay and Combo',
@@ -37,6 +38,8 @@ class OptionsState extends MusicBeatState
 		if (label != "Adjust Delay and Combo") removeTouchPad();
 		
 		switch(label) {
+			case 'Note Skins':
+				MusicBeatState.switchState(new NoteSkinState());
 			case 'Note Colors':
 				openSubState(new options.NotesSubState());
 			case 'Controls':
@@ -140,7 +143,7 @@ class OptionsState extends MusicBeatState
 		persistentUpdate = true;
 	}
 
-    var exiting:Bool = false;
+	var exiting:Bool = false;
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
@@ -161,7 +164,7 @@ class OptionsState extends MusicBeatState
 		#end
 
 		if (controls.BACK) {
-            		exiting = true;
+			exiting = true;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			if(onPlayState)
 			{
@@ -172,7 +175,7 @@ class OptionsState extends MusicBeatState
 			else MusicBeatState.switchState(new MainMenuState());
 		}
 		else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
-	}
+		}
 	}
 	
 	function changeSelection(change:Int = 0) {
