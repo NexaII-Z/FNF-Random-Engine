@@ -66,7 +66,7 @@ import tea.SScript;
  *
  * If you want to add your stage to the game, copy states/stages/Template.hx,
  * and put your stage code there, then, on PlayState, search for
- * "switch (curStage)", and add your stage to that list.
+ * "switch (curSta)", and add your stage to that list.
  *
  * If you want to code Events, you can either code it on a Stage file or on PlayState, if you're doing the latter, search for:
  *
@@ -397,6 +397,8 @@ class PlayState extends MusicBeatState
 			case 'school': new states.stages.School(); //Week 6 - Senpai, Roses
 			case 'schoolEvil': new states.stages.SchoolEvil(); //Week 6 - Thorns
 			case 'tank': new states.stages.Tank(); //Week 7 - Ugh, Guns, Stress
+			case 'phillyStreets': new states.stages.PhillyStreets(); //Week End 1- Darnell, Lit-Up, 2Hot
+			case 'phillyBlazin': new states.stages.PhillyBlazin(); //Week End 1- Blazin
 		}
 
 		if(isPixelStage) {
