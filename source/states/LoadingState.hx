@@ -45,13 +45,13 @@ class LoadingState extends MusicBeatState
 		var bg:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, FlxG.height, 0xffcaff4d);
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
-		funkay = new FlxSprite(0, 0).loadGraphic(Paths.getPath('images/funkay.png', IMAGE));
-		funkay.setGraphicSize(0, FlxG.height);
-		funkay.updateHitbox();
-		add(funkay);
-		funkay.antialiasing = ClientPrefs.data.antialiasing;
-		funkay.scrollFactor.set();
-		funkay.screenCenter();
+		funkin = new FlxSprite(0, 0).loadGraphic(Paths.getPath('images/funkin.png', IMAGE));
+		funkin.setGraphicSize(0, FlxG.height);
+		funkin.updateHitbox();
+		add(funkin);
+		funkin.antialiasing = ClientPrefs.data.antialiasing;
+		funkin.scrollFactor.set();
+		funkin.screenCenter();
 
 		loadBar = new FlxSprite(0, FlxG.height - 20).makeGraphic(FlxG.width, 10, 0xffff16d2);
 		loadBar.screenCenter(X);
@@ -110,12 +110,12 @@ class LoadingState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		funkay.setGraphicSize(Std.int(0.88 * FlxG.width + 0.9 * (funkay.width - 0.88 * FlxG.width)));
-		funkay.updateHitbox();
+		funkin.setGraphicSize(Std.int(0.88 * FlxG.width + 0.9 * (funkay.width - 0.88 * FlxG.width)));
+		funkin.updateHitbox();
 		if(controls.ACCEPT)
 		{
-			funkay.setGraphicSize(Std.int(funkay.width + 60));
-			funkay.updateHitbox();
+			funkin.setGraphicSize(Std.int(funkay.width + 60));
+			funkin.updateHitbox();
 		}
 
 		if(callbacks != null) {
