@@ -38,7 +38,7 @@ class LoadingState extends MusicBeatState
 		this.directory = directory;
 	}
 
-	var funkay:FlxSprite;
+	var funkin:FlxSprite;
 	var loadBar:FlxSprite;
 	override function create()
 	{
