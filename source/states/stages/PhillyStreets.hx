@@ -5,6 +5,7 @@ import shaders.RainShader;
 
 import flixel.addons.display.FlxTiledSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.addons.transition.FlxTransitionableState;
 
 import substates.GameOverSubstate;
 import states.stages.objects.*;
