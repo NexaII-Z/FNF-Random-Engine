@@ -2,7 +2,6 @@ package;
 
 import debug.FPSCounter;
 
-import flixel.FlxG; // Added for mouse control
 import flixel.graphics.FlxGraphic;
 import flixel.FlxGame;
 import flixel.FlxState;
@@ -125,15 +124,6 @@ class Main extends Sprite
 		ClientPrefs.loadDefaultKeys();
 		#if ACHIEVEMENTS_ALLOWED Achievements.load(); #end
 		addChild(new FlxGame(game.width, game.height, #if COPYSTATE_ALLOWED !CopyState.checkExistingFiles() ? CopyState : #end game.initialState, #if (flixel < "5.0.0") game.zoom, #end game.framerate, game.framerate, game.skipSplash, game.startFullscreen));
-
-		// Global Mouse Cursor Injection
-		try {
-			if (Assets.exists("assets/shared/images/cursor-default.png")) {
-				FlxG.mouse.load(Assets.getBitmapData("assets//shared/images/cursor-default.png"));
-			}
-		} catch(e:haxe.Exception) {
-			trace("Could not load custom mouse graphics: " + e.message);
-		}
 
 		fpsVar = new FPSCounter(10, 3, 0xFFFFFF);
 		addChild(fpsVar);
