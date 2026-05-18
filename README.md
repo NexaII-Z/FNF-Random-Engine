@@ -11,7 +11,6 @@ This Engine Is Solo Dev, Poor Dev...
 * New Stage Editor
 * Weekend1
 * New Ui For States [no editors]
-* alot in the feature
 * Pico Mixes
 * Erect + Nightmare Mixes
 * V-slice Chart Reader
