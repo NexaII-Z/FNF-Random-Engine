@@ -1,0 +1,5 @@
+StageEditor Is Now Updated With Manu Featuers And Ui Fixs
+NoteSkin Selector is now a thing in options menu
+You can disable your not rgb by usign this pretty cool thing i made
+Note-true = rgb is on
+Note-false rgb is off
