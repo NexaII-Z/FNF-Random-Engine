@@ -69,7 +69,7 @@ class StageData {
 				case 'darnell' | 'lit-up' | '2hot':
 					stage = 'phillyStreets';
 				case 'blazin':
-					stage = 'phillyBlazin;
+					stage = 'phillyBlazin';
 				default:
 					stage = 'stage';
 			}
