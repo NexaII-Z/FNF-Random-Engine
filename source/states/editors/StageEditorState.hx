@@ -167,7 +167,7 @@ class StageEditorState extends MusicBeatState
 		FlxG.mouse.visible = true;
 
 		#if mobile
-		addTouchPad('LEFT_FULL', 'A_B_C_E_F');
+		addTouchPad('LEFT_FULL', 'A_B_C_X_Y');
 		if (touchPad != null) touchPad.cameras = [uiCam];
 		#end
 
