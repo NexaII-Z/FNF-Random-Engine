@@ -10,7 +10,7 @@ import flixel.text.FlxText;
 import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
-import flixel.group.FlxTypedGroup;
+import flixel.addons.ui.FlxUIInputText;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 
@@ -29,18 +29,16 @@ class NoteSkinState extends MusicBeatState
 	static inline var CARD_GAP:Int    = 12;
 	static inline var COLS:Int        = 4;
 	static inline var ROWS:Int        = 4;
-	static inline var PAGE_SIZE:Int   = COLS * ROWS; // 16 per page
+	static inline var PAGE_SIZE:Int   = COLS * ROWS;
+	// 16 per page
 
 	static inline var DIVIDER_X:Int   = GRID_X + COLS * (CARD_SIZE + CARD_GAP) + 10;
-
 	static inline var PREVIEW_X:Int   = DIVIDER_X + 20;
 	static inline var PREVIEW_Y:Int   = 60;
-
 	static inline var SCROLLBAR_X:Int = DIVIDER_X + 6;
 	static inline var SCROLLBAR_Y:Int = GRID_Y;
 	static inline var SCROLLBAR_H:Int = ROWS * (CARD_SIZE + CARD_GAP);
 	static inline var THUMB_H:Int     = 40;
-
 	// ── State ────────────────────────────────────────────────────────────────
 	var allSkins:Array<String>  = [];
 	var filtered:Array<String>  = [];
@@ -52,7 +50,6 @@ class NoteSkinState extends MusicBeatState
 	var cardBGs:Array<FlxSprite>    = [];
 	var cardNotes:Array<StrumNote>  = [];
 	var cardLabels:Array<FlxText>   = [];
-
 	// ── Scrollbar ────────────────────────────────────────────────────────────
 	var scrollTrack:FlxSprite;
 	var scrollThumb:FlxSprite;
@@ -62,17 +59,14 @@ class NoteSkinState extends MusicBeatState
 	// ── Right panel ──────────────────────────────────────────────────────────
 	var previewBG:FlxSprite;
 	var skinNameText:FlxText;
-
 	// Preview notes (4 strumlines)
 	var previewNotes:Array<StrumNote> = [];
 	var previewAnim:String            = 'static';
-
 	// Control labels (ASKL / DFJK or custom)
 	var controlLabels:Array<FlxText>  = [];
 	var controlArrows:Array<FlxText>  = [];
 
 	var animLabel:FlxText;
-
 	// ── Search ───────────────────────────────────────────────────────────────
 	var searchBG:FlxSprite;
 	var searchInput:FlxUIInputText;
@@ -81,13 +75,11 @@ class NoteSkinState extends MusicBeatState
 	// ── Page label ───────────────────────────────────────────────────────────
 	var pageText:FlxText;
 	var titleText:FlxText;
-
 	// ── Page arrows ──────────────────────────────────────────────────────────
 	var pageLeftBtn:FlxSprite;
 	var pageRightBtn:FlxSprite;
 	var pageLeftTxt:FlxText;
 	var pageRightTxt:FlxText;
-
 	// ── Control key names cache ───────────────────────────────────────────────
 	var noteKeyNames:Array<String> = ['A', 'S', 'K', 'L'];
 
@@ -111,37 +103,30 @@ class NoteSkinState extends MusicBeatState
 
 		// ── Load skin list ───────────────────────────────────────────────────
 		loadSkinList();
-
 		// ── Title ────────────────────────────────────────────────────────────
 		titleText = new FlxText(GRID_X, 10, 300, 'Notes', 28);
 		titleText.setFormat(Paths.font('vcr.ttf'), 28, FlxColor.WHITE, LEFT,
 			FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(titleText);
-
 		pageText = new FlxText(GRID_X, 44, 400, '', 16);
 		pageText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.GRAY, LEFT);
 		add(pageText);
-
 		// ── Divider ──────────────────────────────────────────────────────────
 		var divider = new FlxSprite(DIVIDER_X, 0).makeGraphic(2, FlxG.height, 0xFF444466);
 		add(divider);
-
 		// ── Scrollbar track ──────────────────────────────────────────────────
 		scrollTrack = new FlxSprite(SCROLLBAR_X, SCROLLBAR_Y).makeGraphic(8, SCROLLBAR_H, 0xFF333355);
 		add(scrollTrack);
-
 		scrollThumb = new FlxSprite(SCROLLBAR_X - 1, SCROLLBAR_Y).makeGraphic(10, THUMB_H, 0xFFAABBFF);
 		add(scrollThumb);
 
 		// ── Grid card group ──────────────────────────────────────────────────
 		cardGroup = new FlxSpriteGroup();
 		add(cardGroup);
-
 		// ── Right panel ──────────────────────────────────────────────────────
 		previewBG = new FlxSprite(PREVIEW_X, PREVIEW_Y).makeGraphic(
 			FlxG.width - PREVIEW_X - 10, FlxG.height - PREVIEW_Y - 10, 0xFF1A1030);
 		add(previewBG);
-
 		// Skin name
 		skinNameText = new FlxText(PREVIEW_X + 10, PREVIEW_Y + 10, previewBG.width - 20, '', 24);
 		skinNameText.setFormat(Paths.font('vcr.ttf'), 24, FlxColor.YELLOW, CENTER,
@@ -155,7 +140,6 @@ class NoteSkinState extends MusicBeatState
 
 		searchIconText = new FlxText(searchBG.x + searchBG.width + 4, searchBG.y + 6, 30, '📁', 14);
 		add(searchIconText);
-
 		searchInput = new FlxUIInputText(searchBG.x + 6, searchBG.y + 6,
 			Std.int(searchBG.width - 12), 'Search Skins...', 14);
 		searchInput.color      = FlxColor.WHITE;
@@ -164,7 +148,6 @@ class NoteSkinState extends MusicBeatState
 
 		// ── Control key name display ─────────────────────────────────────────
 		buildControlDisplay();
-
 		// ── Preview note strumlines ───────────────────────────────────────────
 		buildPreviewNotes();
 
@@ -173,7 +156,6 @@ class NoteSkinState extends MusicBeatState
 		pageRightTxt = makePanelText('>', GRID_X + COLS * (CARD_SIZE + CARD_GAP) - 20, FlxG.height - 36, 24);
 		add(pageLeftTxt);
 		add(pageRightTxt);
-
 		// ── Mobile back button ───────────────────────────────────────────────
 		#if mobile
 		addTouchPad("LEFT_FULL", "A_B");
@@ -194,7 +176,6 @@ class NoteSkinState extends MusicBeatState
 				allSkins.push(s.trim());
 
 		filtered = allSkins.copy();
-
 		// Start on currently selected skin
 		var idx = filtered.indexOf(ClientPrefs.data.noteSkin);
 		if (idx < 0) idx = 0;
@@ -220,12 +201,10 @@ class NoteSkinState extends MusicBeatState
 		for (i in 0...4)
 		{
 			var cx = noteStartX + spacing * i + Std.int(spacing / 2);
-
 			var arTxt = new FlxText(cx - 20, arrowY, 40, arrowGlyphs[i], 28);
 			arTxt.setFormat(Paths.font('vcr.ttf'), 28, 0xFFB0C4FF, CENTER);
 			add(arTxt);
 			controlArrows.push(arTxt);
-
 			var kTxt = new FlxText(cx - 20, keyY, 40, bound[i], 18);
 			kTxt.setFormat(Paths.font('vcr.ttf'), 18, FlxColor.WHITE, CENTER);
 			add(kTxt);
@@ -258,12 +237,14 @@ class NoteSkinState extends MusicBeatState
 
 	function getBoundKeyNames():Array<String>
 	{
-		// Try to read from ClientPrefs keyBinds; fall back to ASKL
+		// Try to read from ClientPrefs keyBinds;
+		// fall back to ASKL
 		var defaults = ['A', 'S', 'K', 'L'];
 		try
 		{
 			var binds:Array<Array<Dynamic>> = ClientPrefs.data.gameplaySettings != null
-				? null : null; // not used directly
+				? null : null;
+			// not used directly
 
 			// In Psych 0.7.3, key names are in ClientPrefs.keyBinds
 			var kb = ClientPrefs.keyBinds;
@@ -297,12 +278,10 @@ class NoteSkinState extends MusicBeatState
 	{
 		for (n in previewNotes) n.destroy();
 		previewNotes = [];
-
 		var noteAreaW  = previewBG.width - 20;
 		var noteStartX = PREVIEW_X + 10;
 		var spacing    = Std.int(noteAreaW / 4);
 		var noteY      = PREVIEW_Y + 300;
-
 		for (i in 0...4)
 		{
 			var cx = noteStartX + spacing * i + Std.int(spacing / 2) - 40;
@@ -326,7 +305,6 @@ class NoteSkinState extends MusicBeatState
 		var postfix     = Note.getNoteSkinPostfix();
 		var custom      = skin + postfix;
 		if (Paths.fileExists('images/$custom.png', IMAGE)) skin = custom;
-
 		// Override with selected skin if not default
 		if (filtered.length > 0 && curSelected < filtered.length)
 		{
@@ -360,9 +338,11 @@ class NoteSkinState extends MusicBeatState
 	function renderPage()
 	{
 		// Clear old cards
-		for (bg in cardBGs)    { cardGroup.remove(bg, true);    bg.destroy(); }
+		for (bg in cardBGs)    { cardGroup.remove(bg, true);    bg.destroy();
+		}
 		for (sn in cardNotes)  { cardGroup.remove(sn, true);    sn.destroy(); }
-		for (lb in cardLabels) { cardGroup.remove(lb, true);    lb.destroy(); }
+		for (lb in cardLabels) { cardGroup.remove(lb, true);    lb.destroy();
+		}
 		cardBGs    = [];
 		cardNotes  = [];
 		cardLabels = [];
@@ -375,10 +355,8 @@ class NoteSkinState extends MusicBeatState
 			var gridIdx = idx - start;
 			var col = gridIdx % COLS;
 			var row = Std.int(gridIdx / COLS);
-
 			var cx = GRID_X + col * (CARD_SIZE + CARD_GAP);
 			var cy = GRID_Y + row * (CARD_SIZE + CARD_GAP);
-
 			var isSelected = (idx == curSelected);
 
 			// Card background
@@ -394,9 +372,9 @@ class NoteSkinState extends MusicBeatState
 			}
 			cardGroup.add(cardBG);
 			cardBGs.push(cardBG);
-
 			// Up-arrow strumnote preview
-			var sn = new StrumNote(cx + Std.int(CARD_SIZE / 2) - 25, cy + 20, 2, 0); // direction 2 = up
+			var sn = new StrumNote(cx + Std.int(CARD_SIZE / 2) - 25, cy + 20, 2, 0);
+			// direction 2 = up
 			sn.setGraphicSize(50, 50);
 			sn.updateHitbox();
 			sn.centerOffsets();
@@ -413,7 +391,6 @@ class NoteSkinState extends MusicBeatState
 			sn.playAnim('static');
 			cardGroup.add(sn);
 			cardNotes.push(sn);
-
 			// Label
 			var lbl = new FlxText(cx, cy + CARD_SIZE - 28, CARD_SIZE, skinName, 10);
 			lbl.setFormat(Paths.font('vcr.ttf'), 10,
@@ -427,7 +404,6 @@ class NoteSkinState extends MusicBeatState
 		// Page text
 		var totalPages = Std.int(Math.ceil(filtered.length / PAGE_SIZE));
 		pageText.text  = 'Page ${curPage + 1} / ${Std.int(Math.max(1, totalPages))}';
-
 		// Scrollbar thumb position
 		updateScrollThumb();
 	}
@@ -435,11 +411,13 @@ class NoteSkinState extends MusicBeatState
 	function updateScrollThumb()
 	{
 		var totalPages = Std.int(Math.ceil(filtered.length / PAGE_SIZE));
-		if (totalPages <= 1) { scrollThumb.visible = false; return; }
+		if (totalPages <= 1) { scrollThumb.visible = false; return;
+		}
 		scrollThumb.visible = true;
 
 		var travel   = SCROLLBAR_H - THUMB_H;
-		var fraction = totalPages > 1 ? curPage / (totalPages - 1) : 0;
+		var fraction = totalPages > 1 ?
+		curPage / (totalPages - 1) : 0;
 		scrollThumb.y = SCROLLBAR_Y + fraction * travel;
 	}
 
@@ -455,7 +433,6 @@ class NoteSkinState extends MusicBeatState
 		filtered = q.length == 0
 			? allSkins.copy()
 			: allSkins.filter(s -> s.toLowerCase().indexOf(q) >= 0);
-
 		if (filtered.length == 0) filtered = ['(no results)'];
 
 		curSelected = 0;
@@ -478,7 +455,6 @@ class NoteSkinState extends MusicBeatState
 		}
 
 		var typing = searchInput != null && searchInput.hasFocus;
-
 		// ── Scrollbar drag ────────────────────────────────────────────────────
 		#if FLX_MOUSE
 		if (FlxG.mouse.justPressed && FlxG.mouse.overlaps(scrollThumb))
@@ -546,7 +522,6 @@ class NoteSkinState extends MusicBeatState
 
 			if (controls.UI_UP_P)   moveCardSelection(-COLS);
 			if (controls.UI_DOWN_P) moveCardSelection(COLS);
-
 			if (controls.ACCEPT)
 			{
 				if (filtered.length > 0 && filtered[curSelected] != '(no results)')
