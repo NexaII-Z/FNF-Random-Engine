@@ -9,6 +9,7 @@ This Engine Is Solo Dev, Poor Dev...
 
 # Random Engine Features
 * New Stage Editor
+* EditorPlayState Is Now In The MasterEditorMenu
 * Weekend1
 * New Ui For States [no editors]
 * Pico Mixes
