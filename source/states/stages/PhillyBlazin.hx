@@ -27,7 +27,8 @@ class PhillyBlazin extends BaseStage
 
 	override function create()
 	{
-		// FlxTransitionableState not available in 0.7.3 — skip transition via PlayState flag
+		// FlxTransitionableState is not available in Psych 0.7.3.
+		// Use PlayState's own skipNextTransOut flag instead.
 		game.skipNextTransOut = true;
 
 		function setupScale(spr:BGSprite)
@@ -36,10 +37,12 @@ class PhillyBlazin extends BaseStage
 			spr.updateHitbox();
 		}
 
-		if(!ClientPrefs.data.lowQuality)
+		if (!ClientPrefs.data.lowQuality)
 		{
 			var skyGraphic = Paths.image('phillyBlazin/skyBlur');
-			scrollingSky = new FlxTiledSprite(skyGraphic, Std.int(skyGraphic.width * 1.1) + 475, Std.int(skyGraphic.height / 1.1), true, false);
+			scrollingSky = new FlxTiledSprite(skyGraphic,
+				Std.int(skyGraphic.width * 1.1) + 475,
+				Std.int(skyGraphic.height / 1.1), true, false);
 			scrollingSky.antialiasing = ClientPrefs.data.antialiasing;
 			scrollingSky.setPosition(-500, -120);
 			scrollingSky.scrollFactor.set();
@@ -60,7 +63,7 @@ class PhillyBlazin extends BaseStage
 		setupScale(phillyForegroundCity);
 		add(phillyForegroundCity);
 
-		if(!ClientPrefs.data.lowQuality)
+		if (!ClientPrefs.data.lowQuality)
 		{
 			foregroundMultiply = new BGSprite('phillyBlazin/streetBlur', -600, -175, 0.0, 0.0);
 			setupScale(foregroundMultiply);
@@ -77,15 +80,19 @@ class PhillyBlazin extends BaseStage
 			add(additionalLighten);
 		}
 
-		if(ClientPrefs.data.shaders)
+		if (ClientPrefs.data.shaders)
 			setupRainShader();
 
 		var _song = PlayState.SONG;
-		if(_song.gameOverSound == null || _song.gameOverSound.trim().length < 1) GameOverSubstate.deathSoundName = 'fnf_loss_sfx-pico-gutpunch';
-		if(_song.gameOverLoop == null || _song.gameOverLoop.trim().length < 1) GameOverSubstate.loopSoundName = 'gameOver-pico';
-		if(_song.gameOverEnd == null || _song.gameOverEnd.trim().length < 1) GameOverSubstate.endSoundName = 'gameOverEnd-pico';
-		if(_song.gameOverChar == null || _song.gameOverChar.trim().length < 1) GameOverSubstate.characterName = 'pico-blazin';
-		// GameOverSubstate.deathDelay does not exist in 0.7.3 — removed
+		if (_song.gameOverSound == null || _song.gameOverSound.trim().length < 1)
+			GameOverSubstate.deathSoundName = 'fnf_loss_sfx-pico-gutpunch';
+		if (_song.gameOverLoop == null || _song.gameOverLoop.trim().length < 1)
+			GameOverSubstate.loopSoundName = 'gameOver-pico';
+		if (_song.gameOverEnd == null || _song.gameOverEnd.trim().length < 1)
+			GameOverSubstate.endSoundName = 'gameOverEnd-pico';
+		if (_song.gameOverChar == null || _song.gameOverChar.trim().length < 1)
+			GameOverSubstate.characterName = 'pico-blazin';
+		// NOTE: GameOverSubstate.deathDelay does not exist in Psych 0.7.3 — removed.
 
 		setDefaultGF('nene');
 		precache();
@@ -100,7 +107,6 @@ class PhillyBlazin extends BaseStage
 						game.endingSong = true;
 						inCutscene = true;
 						canPause = false;
-						// FlxTransitionableState not available — skip via game flag
 						game.skipNextTransIn = true;
 						FlxG.camera.visible = false;
 						camHUD.visible = false;
@@ -112,7 +118,6 @@ class PhillyBlazin extends BaseStage
 
 	override function createPost()
 	{
-		// Instantiate the note-handler objects
 		picoHandler    = new PicoBlazinHandler();
 		darnellHandler = new DarnellBlazinHandler();
 
@@ -121,96 +126,118 @@ class PhillyBlazin extends BaseStage
 
 		for (character in boyfriendGroup.members)
 		{
-			if(character == null) continue;
+			if (character == null) continue;
 			character.color = 0xFFDEDEDE;
 		}
 		for (character in dadGroup.members)
 		{
-			if(character == null) continue;
+			if (character == null) continue;
 			character.color = 0xFFDEDEDE;
 		}
 		for (character in gfGroup.members)
 		{
-			if(character == null) continue;
+			if (character == null) continue;
 			character.color = 0xFF888888;
 		}
 
 		var unspawnNotes:Array<Note> = cast game.unspawnNotes;
 		for (note in unspawnNotes)
 		{
-			if(note == null) continue;
-			note.noAnimation = true;
+			if (note == null) continue;
+			note.noAnimation    = true;
 			note.noMissAnimation = true;
 		}
-		// remove() in 0.7.3 FlxGroup takes only 1 argument (no splice bool)
+
+		// Psych 0.7.3: FlxGroup.remove() takes only one argument — no splice bool.
 		remove(dadGroup);
 		addBehindBF(dadGroup);
 	}
 
 	override function beatHit()
 	{
-		//if(curBeat % 2 == 0) abot.beatHit();
+		// if (curBeat % 2 == 0) abot.beatHit();
 	}
 
-	// startSong, goodNoteHit, noteMiss, noteMissPress, opponentNoteHit are NOT in
-	// BaseStage in Psych 0.7.3. They are called directly from PlayState below.
-	// To wire them up, add to PlayState.hx inside the relevant functions:
-	//   if(Std.isOfType(stage, PhillyBlazin)) cast(stage, PhillyBlazin).onSongStart();
-	//   if(Std.isOfType(stage, PhillyBlazin)) cast(stage, PhillyBlazin).onGoodNoteHit(note);
-	//   etc.
-	// OR — if your BaseStage has these methods, add them back as overrides.
+	// ── Note callbacks ────────────────────────────────────────────────────────
+	// BaseStage in Psych 0.7.3 does NOT have goodNoteHit / noteMiss /
+	// noteMissPress / opponentNoteHit / startSong as overrideable methods.
+	// These are plain public functions; call them from PlayState like:
+	//
+	//   In goodNoteHit(note):
+	//     if (Std.isOfType(stage, PhillyBlazin))
+	//         cast(stage, PhillyBlazin).stageGoodNoteHit(note);
+	//
+	//   In noteMiss(note):
+	//     if (Std.isOfType(stage, PhillyBlazin))
+	//         cast(stage, PhillyBlazin).stageNoteMiss(note);
+	//
+	//   In opponentNoteHit(note):
+	//     if (Std.isOfType(stage, PhillyBlazin))
+	//         cast(stage, PhillyBlazin).stageOpponentNoteHit(note);
+	//
+	//   In keyReleased / ghost-tap handler:
+	//     if (Std.isOfType(stage, PhillyBlazin))
+	//         cast(stage, PhillyBlazin).stageNoteMissPress(direction);
+	//
+	//   At song start (after countdown):
+	//     if (Std.isOfType(stage, PhillyBlazin))
+	//         cast(stage, PhillyBlazin).stageSongStart();
+	//
+	// Alternatively, if your BaseStage DOES declare these as virtual functions
+	// just swap 'public function' → 'override function' below.
 
-	public function onSongStart()
+	public function stageSongStart():Void
 	{
 		// nothing needed for Blazin on song start
 	}
 
-	public function onGoodNoteHit(note:Note)
+	public function stageGoodNoteHit(note:Note):Void
 	{
 		rainTimeScale += 0.7;
 		if (picoHandler != null) picoHandler.noteHit(note);
 	}
 
-	public function onNoteMiss(note:Note)
+	public function stageNoteMiss(note:Note):Void
 	{
 		if (picoHandler != null) picoHandler.noteMiss(note);
 	}
 
-	public function onNoteMissPress(direction:Int)
+	public function stageNoteMissPress(direction:Int):Void
 	{
 		if (picoHandler != null) picoHandler.noteMissPress(direction);
 	}
 
-	public function onOpponentNoteHit(note:Note)
+	public function stageOpponentNoteHit(note:Note):Void
 	{
 		if (darnellHandler != null) darnellHandler.noteHit(note);
 	}
 
-	function setupRainShader()
+	// ── Internal helpers ──────────────────────────────────────────────────────
+
+	function setupRainShader():Void
 	{
 		rainShader = new RainShader();
-		rainShader.scale = FlxG.height / 200;
+		rainShader.scale     = FlxG.height / 200;
 		rainShader.intensity = 0.5;
 		FlxG.camera.setFilters([new ShaderFilter(rainShader)]);
 	}
 
-	function precache()
+	function precache():Void
 	{
 		for (i in 1...4)
-		{
 			Paths.sound('lightning/Lightning$i');
-		}
 	}
 
 	override function update(elapsed:Float)
 	{
-		if(scrollingSky != null) scrollingSky.scrollX -= elapsed * 35;
+		if (scrollingSky != null) scrollingSky.scrollX -= elapsed * 35;
 
-		if(rainShader != null)
+		if (rainShader != null)
 		{
 			rainShader.updateViewInfo(FlxG.width, FlxG.height, FlxG.camera);
 			rainShader.update(elapsed * rainTimeScale);
-			rainTimeScale = FlxMath.lerp(0.02, Math.min(1, rainTimeScale), Math.exp(-elapsed / (1/3)));
+			rainTimeScale = FlxMath.lerp(0.02, Math.min(1, rainTimeScale),
+				Math.exp(-elapsed / (1 / 3)));
 		}
 
 		lightningTimer -= elapsed;
@@ -223,40 +250,43 @@ class PhillyBlazin extends BaseStage
 
 	function applyLightning():Void
 	{
-		if(ClientPrefs.data.lowQuality || game.endingSong) return;
+		if (ClientPrefs.data.lowQuality || game.endingSong) return;
 
-		final LIGHTNING_FULL_DURATION = 1.5;
-		final LIGHTNING_FADE_DURATION = 0.3;
+		final LIGHTNING_FULL_DURATION:Float = 1.5;
+		final LIGHTNING_FADE_DURATION:Float = 0.3;
 
 		skyAdditive.visible = true;
-		skyAdditive.alpha = 0.7;
-		FlxTween.tween(skyAdditive, {alpha: 0.0}, LIGHTNING_FULL_DURATION, {onComplete: function(_)
+		skyAdditive.alpha   = 0.7;
+		FlxTween.tween(skyAdditive, {alpha: 0.0}, LIGHTNING_FULL_DURATION,
 		{
-			skyAdditive.visible = false;
-			lightning.visible = false;
-			foregroundMultiply.visible = false;
-			additionalLighten.visible = false;
-		}});
+			onComplete: function(_)
+			{
+				skyAdditive.visible        = false;
+				lightning.visible          = false;
+				foregroundMultiply.visible = false;
+				additionalLighten.visible  = false;
+			}
+		});
 
 		foregroundMultiply.visible = true;
-		foregroundMultiply.alpha = 0.64;
+		foregroundMultiply.alpha   = 0.64;
 		FlxTween.tween(foregroundMultiply, {alpha: 0.0}, LIGHTNING_FULL_DURATION);
 
 		additionalLighten.visible = true;
-		additionalLighten.alpha = 0.3;
+		additionalLighten.alpha   = 0.3;
 		FlxTween.tween(additionalLighten, {alpha: 0.0}, LIGHTNING_FADE_DURATION);
 
 		lightning.visible = true;
 		lightning.animation.play('lightning0', true);
 
-		if(FlxG.random.bool(65))
+		if (FlxG.random.bool(65))
 			lightning.x = FlxG.random.int(-250, 280);
 		else
 			lightning.x = FlxG.random.int(780, 900);
 
 		FlxTween.color(boyfriend, LIGHTNING_FADE_DURATION, 0xFF606060, 0xFFDEDEDE);
-		FlxTween.color(dad, LIGHTNING_FADE_DURATION, 0xFF606060, 0xFFDEDEDE);
-		FlxTween.color(gf, LIGHTNING_FADE_DURATION, 0xFF606060, 0xFF888888);
+		FlxTween.color(dad,       LIGHTNING_FADE_DURATION, 0xFF606060, 0xFFDEDEDE);
+		FlxTween.color(gf,        LIGHTNING_FADE_DURATION, 0xFF606060, 0xFF888888);
 
 		FlxG.sound.play(Paths.soundRandom('lightning/Lightning', 1, 3));
 	}
