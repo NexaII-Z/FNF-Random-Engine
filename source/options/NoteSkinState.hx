@@ -16,72 +16,65 @@ import flixel.tweens.FlxEase;
 
 /**
  * Full-screen note skin selector.
- * Left:  paged 4-column grid of note skin cards.
- * Right: large preview of selected skin with control labels + search bar.
- * Center: scrollbar thumb for dragging between pages.
+ * Left:  paged 4-column grid of note skin cards + search bar below page label.
+ * Right: large preview of selected skin + animation buttons.
+ * Navigation: D-pad left/right moves between skins, wrapping pages automatically.
+ * Equip:  press A (ACCEPT) to equip currently highlighted skin.
+ * Equipped card = blue highlight. Selected (not equipped) = gold highlight.
  */
 class NoteSkinState extends MusicBeatState
 {
 	// ── Layout constants ─────────────────────────────────────────────────────
-	static inline var GRID_X:Int      = 20;
-	static inline var GRID_Y:Int      = 80;
-	static inline var CARD_SIZE:Int   = 130;
-	static inline var CARD_GAP:Int    = 12;
-	static inline var COLS:Int        = 4;
-	static inline var ROWS:Int        = 4;
-	static inline var PAGE_SIZE:Int   = COLS * ROWS;
-	// 16 per page
+	static inline var GRID_X:Int    = 20;
+	static inline var GRID_Y:Int    = 110; // pushed down to make room for search bar
+	static inline var CARD_SIZE:Int = 130;
+	static inline var CARD_GAP:Int  = 12;
+	static inline var COLS:Int      = 4;
+	static inline var ROWS:Int      = 4;
+	static inline var PAGE_SIZE:Int = COLS * ROWS; // 16 per page
 
-	static inline var DIVIDER_X:Int   = GRID_X + COLS * (CARD_SIZE + CARD_GAP) + 10;
-	static inline var PREVIEW_X:Int   = DIVIDER_X + 20;
-	static inline var PREVIEW_Y:Int   = 60;
-	static inline var SCROLLBAR_X:Int = DIVIDER_X + 6;
-	static inline var SCROLLBAR_Y:Int = GRID_Y;
-	static inline var SCROLLBAR_H:Int = ROWS * (CARD_SIZE + CARD_GAP);
-	static inline var THUMB_H:Int     = 40;
+	static inline var DIVIDER_X:Int = GRID_X + COLS * (CARD_SIZE + CARD_GAP) + 10;
+	static inline var PREVIEW_X:Int = DIVIDER_X + 20;
+	static inline var PREVIEW_Y:Int = 60;
+
 	// ── State ────────────────────────────────────────────────────────────────
-	var allSkins:Array<String>  = [];
-	var filtered:Array<String>  = [];
-	var curPage:Int             = 0;
-	var curSelected:Int         = 0;   // index in `filtered`
+	var allSkins:Array<String> = [];
+	var filtered:Array<String> = [];
+	var curPage:Int            = 0;
+	var curSelected:Int        = 0; // index in `filtered` — highlighted (not necessarily equipped)
+	var equippedIdx:Int        = 0; // index in `filtered` of currently equipped skin
 
-	// ── Grid ────────────────────────────────────────────────────────────────
+	// ── Grid ─────────────────────────────────────────────────────────────────
 	var cardGroup:FlxSpriteGroup;
-	var cardBGs:Array<FlxSprite>    = [];
-	var cardNotes:Array<StrumNote>  = [];
-	var cardLabels:Array<FlxText>   = [];
-	// ── Scrollbar ────────────────────────────────────────────────────────────
-	var scrollTrack:FlxSprite;
-	var scrollThumb:FlxSprite;
-	var draggingScroll:Bool   = false;
-	var dragOffsetY:Float     = 0;
+	var cardBGs:Array<FlxSprite>   = [];
+	var cardNotes:Array<StrumNote> = [];
+	var cardLabels:Array<FlxText>  = [];
 
 	// ── Right panel ──────────────────────────────────────────────────────────
 	var previewBG:FlxSprite;
 	var skinNameText:FlxText;
-	// Preview notes (4 strumlines)
 	var previewNotes:Array<StrumNote> = [];
 	var previewAnim:String            = 'static';
-	// Control labels (ASKL / DFJK or custom)
-	var controlLabels:Array<FlxText>  = [];
-	var controlArrows:Array<FlxText>  = [];
-
 	var animLabel:FlxText;
+
 	// ── Search ───────────────────────────────────────────────────────────────
 	var searchBG:FlxSprite;
 	var searchInput:FlxUIInputText;
 	var searchIconText:FlxText;
 
-	// ── Page label ───────────────────────────────────────────────────────────
+	// ── Page / title labels ───────────────────────────────────────────────────
 	var pageText:FlxText;
 	var titleText:FlxText;
-	// ── Page arrows ──────────────────────────────────────────────────────────
-	var pageLeftBtn:FlxSprite;
-	var pageRightBtn:FlxSprite;
+
+	// ── Page arrows ───────────────────────────────────────────────────────────
 	var pageLeftTxt:FlxText;
 	var pageRightTxt:FlxText;
-	// ── Control key names cache ───────────────────────────────────────────────
-	var noteKeyNames:Array<String> = ['A', 'S', 'K', 'L'];
+
+	// ── Input hold repeat ─────────────────────────────────────────────────────
+	var holdTimer:Float  = 0;
+	var holdDelay:Float  = 0.4;  // seconds before repeat starts
+	var holdRepeat:Float = 0.1;  // repeat interval
+	var holdDir:Int      = 0;    // -1 left, 1 right, 0 none
 
 	override function create()
 	{
@@ -94,74 +87,90 @@ class NoteSkinState extends MusicBeatState
 		DiscordClient.changePresence("Note Skin Selector", null);
 		#end
 
-		// ── Background ───────────────────────────────────────────────────────
+		// ── Background ────────────────────────────────────────────────────────
 		var bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.color = 0xFF2A1A4A;
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.screenCenter();
 		add(bg);
 
-		// ── Load skin list ───────────────────────────────────────────────────
+		// ── Load skin list ────────────────────────────────────────────────────
 		loadSkinList();
-		// ── Title ────────────────────────────────────────────────────────────
+
+		// ── Title ─────────────────────────────────────────────────────────────
 		titleText = new FlxText(GRID_X, 10, 300, 'Notes', 28);
 		titleText.setFormat(Paths.font('vcr.ttf'), 28, FlxColor.WHITE, LEFT,
 			FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(titleText);
+
 		pageText = new FlxText(GRID_X, 44, 400, '', 16);
 		pageText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.GRAY, LEFT);
 		add(pageText);
-		// ── Divider ──────────────────────────────────────────────────────────
+
+		// ── Search bar (left side, below page label) ──────────────────────────
+		var gridW = COLS * (CARD_SIZE + CARD_GAP) - CARD_GAP;
+		searchBG = new FlxSprite(GRID_X, 66).makeGraphic(gridW - 36, 32, 0xFF2A2050);
+		add(searchBG);
+
+		searchIconText = new FlxText(searchBG.x + searchBG.width + 4, searchBG.y + 6, 30, '🔍', 14);
+		add(searchIconText);
+
+		searchInput = new FlxUIInputText(searchBG.x + 6, searchBG.y + 6,
+			Std.int(searchBG.width - 12), 'Search...', 14);
+		searchInput.color      = FlxColor.WHITE;
+		searchInput.caretColor = FlxColor.CYAN;
+		add(searchInput);
+
+		// ── Divider ───────────────────────────────────────────────────────────
 		var divider = new FlxSprite(DIVIDER_X, 0).makeGraphic(2, FlxG.height, 0xFF444466);
 		add(divider);
-		// ── Scrollbar track ──────────────────────────────────────────────────
-		scrollTrack = new FlxSprite(SCROLLBAR_X, SCROLLBAR_Y).makeGraphic(8, SCROLLBAR_H, 0xFF333355);
-		add(scrollTrack);
-		scrollThumb = new FlxSprite(SCROLLBAR_X - 1, SCROLLBAR_Y).makeGraphic(10, THUMB_H, 0xFFAABBFF);
-		add(scrollThumb);
 
-		// ── Grid card group ──────────────────────────────────────────────────
+		// ── Grid card group ───────────────────────────────────────────────────
 		cardGroup = new FlxSpriteGroup();
 		add(cardGroup);
-		// ── Right panel ──────────────────────────────────────────────────────
+
+		// ── Right panel ───────────────────────────────────────────────────────
 		previewBG = new FlxSprite(PREVIEW_X, PREVIEW_Y).makeGraphic(
 			FlxG.width - PREVIEW_X - 10, FlxG.height - PREVIEW_Y - 10, 0xFF1A1030);
 		add(previewBG);
-		// Skin name
+
 		skinNameText = new FlxText(PREVIEW_X + 10, PREVIEW_Y + 10, previewBG.width - 20, '', 24);
 		skinNameText.setFormat(Paths.font('vcr.ttf'), 24, FlxColor.YELLOW, CENTER,
 			FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(skinNameText);
 
-		// ── Search bar ───────────────────────────────────────────────────────
-		searchBG = new FlxSprite(PREVIEW_X + 10, PREVIEW_Y + 50).makeGraphic(
-			Std.int(previewBG.width - 60), 32, 0xFF2A2050);
-		add(searchBG);
-
-		searchIconText = new FlxText(searchBG.x + searchBG.width + 4, searchBG.y + 6, 30, '📁', 14);
-		add(searchIconText);
-		searchInput = new FlxUIInputText(searchBG.x + 6, searchBG.y + 6,
-			Std.int(searchBG.width - 12), 'Search Skins...', 14);
-		searchInput.color      = FlxColor.WHITE;
-		searchInput.caretColor = FlxColor.CYAN;
-		add(searchInput);
-
-		// ── Control key name display ─────────────────────────────────────────
-		buildControlDisplay();
-		// ── Preview note strumlines ───────────────────────────────────────────
+		// ── Preview notes ─────────────────────────────────────────────────────
 		buildPreviewNotes();
 
+		// ── Animation buttons ─────────────────────────────────────────────────
+		animLabel = new FlxText(PREVIEW_X + 10, PREVIEW_Y + 120, previewBG.width - 20, 'PREVIEW ANIMATIONS', 14);
+		animLabel.setFormat(Paths.font('vcr.ttf'), 14, FlxColor.GRAY, CENTER);
+		add(animLabel);
+
+		var animNames = ['static', 'pressed', 'confirm'];
+		var btnY      = animLabel.y + 22;
+		for (i in 0...animNames.length)
+		{
+			var btnBG = new FlxSprite(PREVIEW_X + 10 + i * 90, btnY).makeGraphic(80, 28, 0xFF333366);
+			add(btnBG);
+			var bTxt = new FlxText(btnBG.x, btnBG.y + 5, 80, animNames[i], 13);
+			bTxt.setFormat(Paths.font('vcr.ttf'), 13, FlxColor.WHITE, CENTER);
+			add(bTxt);
+		}
+
 		// ── Page nav arrows ───────────────────────────────────────────────────
-		pageLeftTxt  = makePanelText('<', GRID_X, FlxG.height - 36, 24);
-		pageRightTxt = makePanelText('>', GRID_X + COLS * (CARD_SIZE + CARD_GAP) - 20, FlxG.height - 36, 24);
+		var arrowY = FlxG.height - 36;
+		pageLeftTxt  = makePanelText('<', GRID_X, arrowY, 24);
+		pageRightTxt = makePanelText('>', GRID_X + gridW - 20, arrowY, 24);
 		add(pageLeftTxt);
 		add(pageRightTxt);
-		// ── Mobile back button ───────────────────────────────────────────────
+
+		// ── Mobile back button ────────────────────────────────────────────────
 		#if mobile
 		addTouchPad("LEFT_FULL", "A_B");
 		#end
 
-		// ── Initial render ───────────────────────────────────────────────────
+		// ── Initial render ────────────────────────────────────────────────────
 		applySearch();
 	}
 
@@ -176,122 +185,38 @@ class NoteSkinState extends MusicBeatState
 				allSkins.push(s.trim());
 
 		filtered = allSkins.copy();
-		// Start on currently selected skin
-		var idx = filtered.indexOf(ClientPrefs.data.noteSkin);
-		if (idx < 0) idx = 0;
-		curSelected = idx;
+
+		// Find equipped skin
+		var equipped = ClientPrefs.data.noteSkin;
+		var eqName   = (equipped == null || equipped == ClientPrefs.defaultData.noteSkin)
+			? 'Default' : equipped;
+		equippedIdx  = filtered.indexOf(eqName);
+		if (equippedIdx < 0) equippedIdx = 0;
+
+		curSelected = equippedIdx;
 		curPage     = Std.int(curSelected / PAGE_SIZE);
 	}
 
-	// ─── Build control key display ────────────────────────────────────────────
-
-	function buildControlDisplay()
-	{
-		// Arrow glyphs
-		var arrowGlyphs = ['←', '↓', '↑', '→'];
-		// Get bound key names from ClientPrefs controls
-		var bound = getBoundKeyNames();
-
-		var noteAreaW  = previewBG.width - 20;
-		var noteStartX = PREVIEW_X + 10;
-		var arrowY     = PREVIEW_Y + 110;
-		var keyY       = arrowY + 44;
-		var spacing    = Std.int(noteAreaW / 4);
-
-		for (i in 0...4)
-		{
-			var cx = noteStartX + spacing * i + Std.int(spacing / 2);
-			var arTxt = new FlxText(cx - 20, arrowY, 40, arrowGlyphs[i], 28);
-			arTxt.setFormat(Paths.font('vcr.ttf'), 28, 0xFFB0C4FF, CENTER);
-			add(arTxt);
-			controlArrows.push(arTxt);
-			var kTxt = new FlxText(cx - 20, keyY, 40, bound[i], 18);
-			kTxt.setFormat(Paths.font('vcr.ttf'), 18, FlxColor.WHITE, CENTER);
-			add(kTxt);
-			controlLabels.push(kTxt);
-		}
-
-		// "Player" label (no opponent label since we removed the checkbox)
-		var playerLabel = new FlxText(noteStartX, keyY + 28, 120, 'Player', 16);
-		playerLabel.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.CYAN, LEFT);
-		add(playerLabel);
-
-		// Animation label
-		animLabel = new FlxText(noteStartX, PREVIEW_Y + 220, noteAreaW, 'PREVIEW ANIMATIONS', 14);
-		animLabel.setFormat(Paths.font('vcr.ttf'), 14, FlxColor.GRAY, CENTER);
-		add(animLabel);
-
-		// Anim buttons row
-		var animNames  = ['static', 'pressed', 'confirm'];
-		var btnY       = animLabel.y + 22;
-		for (i in 0...animNames.length)
-		{
-			var btnBG = new FlxSprite(noteStartX + i * 90, btnY).makeGraphic(80, 28, 0xFF333366);
-			add(btnBG);
-			var idx  = i; // capture
-			var bTxt = new FlxText(btnBG.x, btnBG.y + 5, 80, animNames[i], 13);
-			bTxt.setFormat(Paths.font('vcr.ttf'), 13, FlxColor.WHITE, CENTER);
-			add(bTxt);
-		}
-	}
-
-	function getBoundKeyNames():Array<String>
-	{
-		// Try to read from ClientPrefs keyBinds;
-		// fall back to ASKL
-		var defaults = ['A', 'S', 'K', 'L'];
-		try
-		{
-			var binds:Array<Array<Dynamic>> = ClientPrefs.data.gameplaySettings != null
-				? null : null;
-			// not used directly
-
-			// In Psych 0.7.3, key names are in ClientPrefs.keyBinds
-			var kb = ClientPrefs.keyBinds;
-			if (kb != null)
-			{
-				var names = [];
-				var keys  = ['note_left', 'note_down', 'note_up', 'note_right'];
-				for (k in keys)
-				{
-					var arr:Array<Dynamic> = Reflect.field(kb, k);
-					if (arr != null && arr.length > 0)
-					{
-						var keyName:String = Std.string(arr[0]);
-						// Strip FlxKey prefix and shorten
-						keyName = keyName.split('_').pop();
-						if (keyName.length > 3) keyName = keyName.charAt(0);
-						names.push(keyName.toUpperCase());
-					}
-					else names.push(defaults[names.length]);
-				}
-				return names;
-			}
-		}
-		catch (e:Dynamic) {}
-		return defaults;
-	}
-
-	// ─── Build preview strumlines ─────────────────────────────────────────────
+	// ─── Build preview strumlines (right panel, all 4 directions) ─────────────
 
 	function buildPreviewNotes()
 	{
-		for (n in previewNotes) n.destroy();
+		for (n in previewNotes) { remove(n, true); n.destroy(); }
 		previewNotes = [];
+
 		var noteAreaW  = previewBG.width - 20;
 		var noteStartX = PREVIEW_X + 10;
 		var spacing    = Std.int(noteAreaW / 4);
-		var noteY      = PREVIEW_Y + 300;
+		var noteY      = PREVIEW_Y + 40; // sit just below the skin name
+
 		for (i in 0...4)
 		{
-			var cx = noteStartX + spacing * i + Std.int(spacing / 2) - 40;
+			var cx = noteStartX + spacing * i + Std.int(spacing / 2) - 37;
 			var sn = new StrumNote(cx, noteY, i, 0);
 			sn.setGraphicSize(75, 75);
 			sn.updateHitbox();
 			sn.centerOffsets();
 			sn.centerOrigin();
-
-			// Apply selected skin
 			applyNoteSkin(sn);
 			sn.playAnim('static');
 			add(sn);
@@ -305,14 +230,14 @@ class NoteSkinState extends MusicBeatState
 		var postfix     = Note.getNoteSkinPostfix();
 		var custom      = skin + postfix;
 		if (Paths.fileExists('images/$custom.png', IMAGE)) skin = custom;
-		// Override with selected skin if not default
+
 		if (filtered.length > 0 && curSelected < filtered.length)
 		{
 			var sel = filtered[curSelected];
 			if (sel != 'Default' && sel != ClientPrefs.defaultData.noteSkin)
 			{
-				var skinPath = 'images/noteSkins/$sel';
-				if (Paths.fileExists('$skinPath.png', IMAGE)) skin = 'noteSkins/$sel';
+				var skinPath = 'noteSkins/$sel';
+				if (Paths.fileExists('images/$skinPath.png', IMAGE)) skin = skinPath;
 			}
 		}
 
@@ -327,10 +252,8 @@ class NoteSkinState extends MusicBeatState
 			applyNoteSkin(sn);
 			sn.playAnim(previewAnim);
 		}
-		if (filtered.length > 0 && curSelected < filtered.length)
-			skinNameText.text = filtered[curSelected];
-		else
-			skinNameText.text = '';
+		skinNameText.text = (filtered.length > 0 && curSelected < filtered.length)
+			? filtered[curSelected] : '';
 	}
 
 	// ─── Grid rendering ───────────────────────────────────────────────────────
@@ -338,11 +261,9 @@ class NoteSkinState extends MusicBeatState
 	function renderPage()
 	{
 		// Clear old cards
-		for (bg in cardBGs)    { cardGroup.remove(bg, true);    bg.destroy();
-		}
-		for (sn in cardNotes)  { cardGroup.remove(sn, true);    sn.destroy(); }
-		for (lb in cardLabels) { cardGroup.remove(lb, true);    lb.destroy();
-		}
+		for (b in cardBGs)    { cardGroup.remove(b, true); b.destroy(); }
+		for (s in cardNotes)  { cardGroup.remove(s, true); s.destroy(); }
+		for (l in cardLabels) { cardGroup.remove(l, true); l.destroy(); }
 		cardBGs    = [];
 		cardNotes  = [];
 		cardLabels = [];
@@ -355,32 +276,51 @@ class NoteSkinState extends MusicBeatState
 			var gridIdx = idx - start;
 			var col = gridIdx % COLS;
 			var row = Std.int(gridIdx / COLS);
-			var cx = GRID_X + col * (CARD_SIZE + CARD_GAP);
-			var cy = GRID_Y + row * (CARD_SIZE + CARD_GAP);
-			var isSelected = (idx == curSelected);
+			var cx  = GRID_X + col * (CARD_SIZE + CARD_GAP);
+			var cy  = GRID_Y + row * (CARD_SIZE + CARD_GAP);
 
-			// Card background
-			var cardBG = new FlxSprite(cx, cy).makeGraphic(CARD_SIZE, CARD_SIZE,
-				isSelected ? 0xFF4A3A8A : 0xFF252040);
-			if (isSelected)
+			var isSelected = (idx == curSelected);
+			var isEquipped = (idx == equippedIdx);
+
+			// Card BG color: blue = equipped, gold border = selected, plain = neither
+			var bgColor:FlxColor = isEquipped ? 0xFF1A4A8A : 0xFF252040;
+
+			if (isSelected && !isEquipped)
 			{
-				// Bright border effect — draw a 2px inset border
-				cardBG.makeGraphic(CARD_SIZE, CARD_SIZE, 0xFFFFCC00);
-				var inner = new FlxSprite(cx + 2, cy + 2).makeGraphic(CARD_SIZE - 4, CARD_SIZE - 4, 0xFF252040);
+				// Gold border outer, dark fill inner
+				var outer = new FlxSprite(cx, cy).makeGraphic(CARD_SIZE, CARD_SIZE, 0xFFFFCC00);
+				cardGroup.add(outer);
+				cardBGs.push(outer);
+				var inner = new FlxSprite(cx + 2, cy + 2).makeGraphic(CARD_SIZE - 4, CARD_SIZE - 4, bgColor);
 				cardGroup.add(inner);
 				cardBGs.push(inner);
 			}
-			cardGroup.add(cardBG);
-			cardBGs.push(cardBG);
-			// Up-arrow strumnote preview
-			var sn = new StrumNote(cx + Std.int(CARD_SIZE / 2) - 25, cy + 20, 2, 0);
-			// direction 2 = up
-			sn.setGraphicSize(50, 50);
+			else if (isSelected && isEquipped)
+			{
+				// Gold border + blue fill
+				var outer = new FlxSprite(cx, cy).makeGraphic(CARD_SIZE, CARD_SIZE, 0xFFFFCC00);
+				cardGroup.add(outer);
+				cardBGs.push(outer);
+				var inner = new FlxSprite(cx + 2, cy + 2).makeGraphic(CARD_SIZE - 4, CARD_SIZE - 4, 0xFF1A4A8A);
+				cardGroup.add(inner);
+				cardBGs.push(inner);
+			}
+			else
+			{
+				var cardBG = new FlxSprite(cx, cy).makeGraphic(CARD_SIZE, CARD_SIZE, bgColor);
+				cardGroup.add(cardBG);
+				cardBGs.push(cardBG);
+			}
+
+			// ── Note icon: use this skin's OWN up note (direction 2) ───────────
+			var skinName = filtered[idx];
+			var sn = new StrumNote(0, 0, 2, 0); // direction 2 = up, temporary position
+			sn.setGraphicSize(58, 58);
 			sn.updateHitbox();
 			sn.centerOffsets();
 			sn.centerOrigin();
 
-			var skinName = filtered[idx];
+			// Apply this card's own skin
 			if (skinName != 'Default' && skinName != ClientPrefs.defaultData.noteSkin)
 			{
 				var skinPath = 'noteSkins/$skinName';
@@ -389,36 +329,27 @@ class NoteSkinState extends MusicBeatState
 			}
 			sn.reloadNote();
 			sn.playAnim('static');
+
+			// Center the note inside the card
+			sn.x = cx + Std.int((CARD_SIZE - sn.width)  / 2);
+			sn.y = cy + Std.int((CARD_SIZE - sn.height) / 2) - 10; // slight upward offset to leave room for label
+
 			cardGroup.add(sn);
 			cardNotes.push(sn);
+
 			// Label
-			var lbl = new FlxText(cx, cy + CARD_SIZE - 28, CARD_SIZE, skinName, 10);
+			var lbl = new FlxText(cx, cy + CARD_SIZE - 26, CARD_SIZE, skinName, 10);
 			lbl.setFormat(Paths.font('vcr.ttf'), 10,
-				isSelected ? FlxColor.YELLOW : FlxColor.WHITE, CENTER);
+				isSelected ? FlxColor.YELLOW : (isEquipped ? 0xFF88CCFF : FlxColor.WHITE), CENTER);
 			lbl.borderStyle = FlxTextBorderStyle.OUTLINE;
 			lbl.borderColor = FlxColor.BLACK;
 			cardGroup.add(lbl);
 			cardLabels.push(lbl);
 		}
 
-		// Page text
+		// Page label
 		var totalPages = Std.int(Math.ceil(filtered.length / PAGE_SIZE));
 		pageText.text  = 'Page ${curPage + 1} / ${Std.int(Math.max(1, totalPages))}';
-		// Scrollbar thumb position
-		updateScrollThumb();
-	}
-
-	function updateScrollThumb()
-	{
-		var totalPages = Std.int(Math.ceil(filtered.length / PAGE_SIZE));
-		if (totalPages <= 1) { scrollThumb.visible = false; return;
-		}
-		scrollThumb.visible = true;
-
-		var travel   = SCROLLBAR_H - THUMB_H;
-		var fraction = totalPages > 1 ?
-		curPage / (totalPages - 1) : 0;
-		scrollThumb.y = SCROLLBAR_Y + fraction * travel;
 	}
 
 	// ─── Search ───────────────────────────────────────────────────────────────
@@ -428,15 +359,23 @@ class NoteSkinState extends MusicBeatState
 	function applySearch()
 	{
 		var q = searchInput != null ? searchInput.text.toLowerCase().trim() : '';
-		if (q == 'search skins...') q = '';
+		if (q == 'search...') q = '';
 
 		filtered = q.length == 0
 			? allSkins.copy()
 			: allSkins.filter(s -> s.toLowerCase().indexOf(q) >= 0);
 		if (filtered.length == 0) filtered = ['(no results)'];
 
-		curSelected = 0;
-		curPage     = 0;
+		// Re-find equipped index in new filtered list
+		var equipped = ClientPrefs.data.noteSkin;
+		var eqName   = (equipped == null || equipped == ClientPrefs.defaultData.noteSkin)
+			? 'Default' : equipped;
+		equippedIdx  = filtered.indexOf(eqName);
+		if (equippedIdx < 0) equippedIdx = 0;
+
+		curSelected = equippedIdx;
+		curPage     = Std.int(curSelected / PAGE_SIZE);
+
 		renderPage();
 		refreshPreviewNotes();
 	}
@@ -447,7 +386,7 @@ class NoteSkinState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		// Search bar live update
+		// Search live update
 		if (searchInput != null)
 		{
 			var q = searchInput.text;
@@ -455,51 +394,36 @@ class NoteSkinState extends MusicBeatState
 		}
 
 		var typing = searchInput != null && searchInput.hasFocus;
-		// ── Scrollbar drag ────────────────────────────────────────────────────
+
+		// ── Mouse: click card or anim buttons ─────────────────────────────────
 		#if FLX_MOUSE
-		if (FlxG.mouse.justPressed && FlxG.mouse.overlaps(scrollThumb))
+		if (FlxG.mouse.justPressed && !typing)
 		{
-			draggingScroll = true;
-			dragOffsetY    = FlxG.mouse.y - scrollThumb.y;
-		}
-		if (!FlxG.mouse.pressed) draggingScroll = false;
-
-		if (draggingScroll)
-		{
-			var newY       = FlxMath.bound(FlxG.mouse.y - dragOffsetY,
-				SCROLLBAR_Y, SCROLLBAR_Y + SCROLLBAR_H - THUMB_H);
-			scrollThumb.y  = newY;
-			var fraction   = (newY - SCROLLBAR_Y) / (SCROLLBAR_H - THUMB_H);
-			var totalPages = Std.int(Math.ceil(filtered.length / PAGE_SIZE));
-			var newPage    = Std.int(Math.round(fraction * (totalPages - 1)));
-			if (newPage != curPage) { curPage = newPage; renderPage(); }
-		}
-
-		// ── Grid card click ───────────────────────────────────────────────────
-		if (FlxG.mouse.justPressed && !draggingScroll)
-		{
+			// Card clicks
 			var start = curPage * PAGE_SIZE;
 			for (i in 0...cardNotes.length)
 			{
-				if (FlxG.mouse.overlaps(cardBGs[i * 2 > cardBGs.length - 1 ? i : i]))
+				if (FlxG.mouse.overlaps(cardNotes[i]))
 				{
 					var realIdx = start + i;
 					if (realIdx < filtered.length && filtered[realIdx] != '(no results)')
 					{
-						selectSkin(realIdx);
+						curSelected = realIdx;
+						renderPage();
+						refreshPreviewNotes();
+						FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 					}
 					break;
 				}
 			}
 
 			// Anim buttons
-			var animNames = ['static', 'pressed', 'confirm'];
-			var noteAreaW = previewBG.width - 20;
-			var noteStartX= PREVIEW_X + 10;
-			var btnY      = PREVIEW_Y + 258;
+			var animNames  = ['static', 'pressed', 'confirm'];
+			var noteAreaW  = previewBG.width - 20;
+			var btnY       = animLabel.y + 22;
 			for (i in 0...animNames.length)
 			{
-				var bx = noteStartX + i * 90;
+				var bx = PREVIEW_X + 10 + i * 90;
 				if (FlxG.mouse.x >= bx && FlxG.mouse.x <= bx + 80
 				 && FlxG.mouse.y >= btnY && FlxG.mouse.y <= btnY + 28)
 				{
@@ -516,17 +440,51 @@ class NoteSkinState extends MusicBeatState
 
 		if (!typing)
 		{
-			// Keyboard navigation
-			if (controls.UI_LEFT_P)  changePage(-1);
-			if (controls.UI_RIGHT_P) changePage(1);
+			// ── D-pad left/right: move selection, auto-page ───────────────────
+			var pressedLeft  = controls.UI_LEFT_P;
+			var pressedRight = controls.UI_RIGHT_P;
+			var heldLeft     = controls.UI_LEFT;
+			var heldRight    = controls.UI_RIGHT;
 
-			if (controls.UI_UP_P)   moveCardSelection(-COLS);
-			if (controls.UI_DOWN_P) moveCardSelection(COLS);
-			if (controls.ACCEPT)
+			if (pressedLeft)
 			{
-				if (filtered.length > 0 && filtered[curSelected] != '(no results)')
-					selectSkin(curSelected);
+				holdDir   = -1;
+				holdTimer = 0;
+				moveSelection(-1);
 			}
+			else if (pressedRight)
+			{
+				holdDir   = 1;
+				holdTimer = 0;
+				moveSelection(1);
+			}
+			else if (heldLeft && holdDir == -1)
+			{
+				holdTimer += elapsed;
+				if (holdTimer >= holdDelay)
+				{
+					holdTimer -= holdRepeat;
+					moveSelection(-1);
+				}
+			}
+			else if (heldRight && holdDir == 1)
+			{
+				holdTimer += elapsed;
+				if (holdTimer >= holdDelay)
+				{
+					holdTimer -= holdRepeat;
+					moveSelection(1);
+				}
+			}
+			else
+			{
+				holdDir   = 0;
+				holdTimer = 0;
+			}
+
+			// ACCEPT = equip selected skin
+			if (controls.ACCEPT)
+				equipSelected();
 
 			if (controls.BACK)
 			{
@@ -536,6 +494,9 @@ class NoteSkinState extends MusicBeatState
 			}
 
 			#if mobile
+			if (touchPad != null && touchPad.buttonA.justPressed)
+				equipSelected();
+
 			if (touchPad != null && touchPad.buttonB.justPressed)
 			{
 				FlxG.mouse.visible = false;
@@ -546,13 +507,28 @@ class NoteSkinState extends MusicBeatState
 		}
 	}
 
-	function moveCardSelection(delta:Int)
+	// ─── Selection movement with auto-page scroll ─────────────────────────────
+
+	function moveSelection(dir:Int)
 	{
-		var newSel = curSelected + delta;
-		newSel     = Std.int(FlxMath.bound(newSel, 0, filtered.length - 1));
-		var newPage = Std.int(newSel / PAGE_SIZE);
-		if (newPage != curPage) { curPage = newPage; }
+		if (filtered.length == 0 || filtered[0] == '(no results)') return;
+
+		var newSel = curSelected + dir;
+
+		// Clamp to valid range
+		if (newSel < 0) newSel = 0;
+		if (newSel >= filtered.length) newSel = filtered.length - 1;
+		if (newSel == curSelected) return;
+
 		curSelected = newSel;
+
+		// Auto-page: if selection moved off the current page
+		var newPage = Std.int(curSelected / PAGE_SIZE);
+		if (newPage != curPage)
+		{
+			curPage = newPage;
+		}
+
 		renderPage();
 		refreshPreviewNotes();
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
@@ -561,19 +537,25 @@ class NoteSkinState extends MusicBeatState
 	function changePage(dir:Int)
 	{
 		var totalPages = Std.int(Math.ceil(filtered.length / PAGE_SIZE));
-		curPage = Std.int(FlxMath.bound(curPage + dir, 0, totalPages - 1));
+		var newPage    = Std.int(FlxMath.bound(curPage + dir, 0, totalPages - 1));
+		if (newPage == curPage) return;
+		curPage     = newPage;
 		curSelected = curPage * PAGE_SIZE;
 		renderPage();
 		refreshPreviewNotes();
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 	}
 
-	function selectSkin(idx:Int)
+	// ─── Equip ────────────────────────────────────────────────────────────────
+
+	function equipSelected()
 	{
-		curSelected             = idx;
-		ClientPrefs.data.noteSkin = filtered[idx] == 'Default'
+		if (filtered.length == 0 || filtered[curSelected] == '(no results)') return;
+
+		equippedIdx = curSelected;
+		ClientPrefs.data.noteSkin = filtered[curSelected] == 'Default'
 			? ClientPrefs.defaultData.noteSkin
-			: filtered[idx];
+			: filtered[curSelected];
 		ClientPrefs.saveSettings();
 
 		renderPage();
