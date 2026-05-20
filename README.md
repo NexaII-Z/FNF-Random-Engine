@@ -9,7 +9,7 @@ This Engine Is Solo Dev, Poor Dev...
 
 # Random Engine Features
 * New Stage Editor %100
-* Weekend1 %56
+* Weekend1 %68
 * New Ui For States [no editors] %34
 * Pico Mixes %0
 * Erect + Nightmare Mixes %0
