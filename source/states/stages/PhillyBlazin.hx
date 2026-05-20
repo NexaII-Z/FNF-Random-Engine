@@ -15,6 +15,9 @@ class PhillyBlazin extends BaseStage
 	var rainShader:RainShader;
 	var rainTimeScale:Float = 1;
 
+	var picoHandler:PicoBlazinHandler;
+	var darnellHandler:DarnellBlazinHandler;
+
 	var scrollingSky:FlxTiledSprite;
 	var skyAdditive:BGSprite;
 	var lightning:BGSprite;
@@ -113,6 +116,10 @@ class PhillyBlazin extends BaseStage
 	
 	override function createPost()
 	{
+		// Instantiate the note-handler objects
+		picoHandler    = new PicoBlazinHandler();
+		darnellHandler = new DarnellBlazinHandler();
+
 		FlxG.camera.focusOn(camFollow.getPosition());
 		FlxG.camera.fade(FlxColor.BLACK, 1.5, true, null, true);
 
@@ -236,33 +243,28 @@ class PhillyBlazin extends BaseStage
 
 	// Note functions
 	
-	
 	override function goodNoteHit(note:Note)
 	{
 		//trace('hit note! ${note.noteType}');
 		rainTimeScale += 0.7;
-		
-		
+		if (picoHandler != null) picoHandler.noteHit(note);
 	}
 	override function noteMiss(note:Note)
 	{
 		//trace('missed note!');
-		
-		
+		if (picoHandler != null) picoHandler.noteMiss(note);
 	}
 
 	override function noteMissPress(direction:Int)
 	{
 		//trace('misinput!');
-		
-		
+		if (picoHandler != null) picoHandler.noteMissPress(direction);
 	}
 
 	// Darnell Note functions
 	override function opponentNoteHit(note:Note)
 	{
 		//trace('opponent hit!');
-		
-		
+		if (darnellHandler != null) darnellHandler.noteHit(note);
 	}
 }
