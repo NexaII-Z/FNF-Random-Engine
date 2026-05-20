@@ -8,18 +8,17 @@ This Engine Is Solo Dev, Poor Dev...
 # Features
 
 # Random Engine Features
-* New Stage Editor
-* EditorPlayState Is Now In The MasterEditorMenu
-* Weekend1
-* New Ui For States [no editors]
-* Pico Mixes
-* Erect + Nightmare Mixes
-* V-slice Chart Reader
+* New Stage Editor %100
+* Weekend1 %56
+* New Ui For States [no editors] %34
+* Pico Mixes %0
+* Erect + Nightmare Mixes %0
+* V-slice Chart Reader %0
 * Psych Chart To V-slice Chart Converter
-* Play Vid When Gameover in chart editor is now a thing! Instead Of Scripting.
-* New Main Menu UI
-* Freeplay added character Select
-* NoteSkin Selector (ui refrence by https://gamebanana.com/members/2112708)
+* Play Vid When Gameover in chart editor is now a thing! Instead Of Scripting. %0
+* New Main Menu UI %100
+* Freeplay added character Select %0
+* NoteSkin Selector (ui refrence by https://gamebanana.com/members/2112708) %100
 * alot coming in the feature
 
 ## Random Credits:
