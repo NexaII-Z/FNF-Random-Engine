@@ -187,6 +187,12 @@ class PhillyStreets extends BaseStage
 		add(spraycanPile);
 		darkenable.push(spraycanPile);
 
+		// ABot speaker - used by Lit Up and 2hot sections.
+		// Uncomment and position as needed for your stage layout.
+		// abot = new ABotSpeaker(YOUR_X, YOUR_Y);
+		// add(abot);
+		// abot.snd = FlxG.sound.music; // hook up to the music for the visualizer
+
 		if(gf != null)
 		{
 			gf.animation.callback = function(name:String, frameNumber:Int, frameIndex:Int)
@@ -418,6 +424,7 @@ class PhillyStreets extends BaseStage
 
 	function updateABotEye(finishInstantly:Bool = false)
 	{
+		if (abot == null) return;
 		if(PlayState.SONG.notes[Std.int(FlxMath.bound(curSection, 0, PlayState.SONG.notes.length - 1))].mustHitSection == true)
 			abot.lookRight();
 		else
@@ -457,6 +464,9 @@ class PhillyStreets extends BaseStage
 	var lightCanSnd:FlxSound;
 	var kickCanSnd:FlxSound;
 	var kneeCanSnd:FlxSound;
+
+	// ABot speaker (for Lit Up / 2hot). Instantiate and add this in createPost if needed.
+	var abot:ABotSpeaker;
 	function precache()
 	{
 		var didCreateCan = false;
@@ -649,6 +659,7 @@ class PhillyStreets extends BaseStage
 	override function beatHit()
 	{
 		//if(curBeat % 2 == 0) abot.beatHit();
+		if(curBeat % 2 == 0 && abot != null) abot.beatHit();
 		switch(currentNeneState) {
 			case STATE_READY:
 				if (blinkCountdown == 0)
