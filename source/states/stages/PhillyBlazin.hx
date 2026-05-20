@@ -3,7 +3,6 @@ package states.stages;
 import openfl.filters.ShaderFilter;
 import shaders.RainShader;
 
-import flixel.addons.transition.FlxTransitionableState;
 import flixel.addons.display.FlxTiledSprite;
 
 import substates.GameOverSubstate;
@@ -23,14 +22,14 @@ class PhillyBlazin extends BaseStage
 	var lightning:BGSprite;
 	var foregroundMultiply:BGSprite;
 	var additionalLighten:FlxSprite;
-	
-	var lightningTimer:Float = 3.0;
 
-	
+	var lightningTimer:Float = 3.0;
 
 	override function create()
 	{
-		FlxTransitionableState.skipNextTransOut = true; //skip the original transition fade
+		// FlxTransitionableState not available in 0.7.3 — skip transition via PlayState flag
+		game.skipNextTransOut = true;
+
 		function setupScale(spr:BGSprite)
 		{
 			spr.scale.set(1.75, 1.75);
@@ -39,7 +38,6 @@ class PhillyBlazin extends BaseStage
 
 		if(!ClientPrefs.data.lowQuality)
 		{
-			// Paths.image() returns FlxGraphic in 0.7.3, so use its width/height directly
 			var skyGraphic = Paths.image('phillyBlazin/skyBlur');
 			scrollingSky = new FlxTiledSprite(skyGraphic, Std.int(skyGraphic.width * 1.1) + 475, Std.int(skyGraphic.height / 1.1), true, false);
 			scrollingSky.antialiasing = ClientPrefs.data.antialiasing;
@@ -51,17 +49,17 @@ class PhillyBlazin extends BaseStage
 			setupScale(skyAdditive);
 			skyAdditive.visible = false;
 			add(skyAdditive);
-			
+
 			lightning = new BGSprite('phillyBlazin/lightning', -50, -300, 0.0, 0.0, ['lightning0'], false);
 			setupScale(lightning);
 			lightning.visible = false;
 			add(lightning);
 		}
-		
+
 		var phillyForegroundCity:BGSprite = new BGSprite('phillyBlazin/streetBlur', -600, -175, 0.0, 0.0);
 		setupScale(phillyForegroundCity);
 		add(phillyForegroundCity);
-		
+
 		if(!ClientPrefs.data.lowQuality)
 		{
 			foregroundMultiply = new BGSprite('phillyBlazin/streetBlur', -600, -175, 0.0, 0.0);
@@ -69,7 +67,7 @@ class PhillyBlazin extends BaseStage
 			foregroundMultiply.blend = MULTIPLY;
 			foregroundMultiply.visible = false;
 			add(foregroundMultiply);
-			
+
 			additionalLighten = new FlxSprite(-600, -175).makeGraphic(1, 1, FlxColor.WHITE);
 			additionalLighten.scrollFactor.set();
 			additionalLighten.scale.set(2500, 2500);
@@ -79,9 +77,6 @@ class PhillyBlazin extends BaseStage
 			add(additionalLighten);
 		}
 
-		
-		
-		
 		if(ClientPrefs.data.shaders)
 			setupRainShader();
 
@@ -90,11 +85,11 @@ class PhillyBlazin extends BaseStage
 		if(_song.gameOverLoop == null || _song.gameOverLoop.trim().length < 1) GameOverSubstate.loopSoundName = 'gameOver-pico';
 		if(_song.gameOverEnd == null || _song.gameOverEnd.trim().length < 1) GameOverSubstate.endSoundName = 'gameOverEnd-pico';
 		if(_song.gameOverChar == null || _song.gameOverChar.trim().length < 1) GameOverSubstate.characterName = 'pico-blazin';
-		GameOverSubstate.deathDelay = 0.15;
+		// GameOverSubstate.deathDelay does not exist in 0.7.3 — removed
 
 		setDefaultGF('nene');
 		precache();
-		
+
 		if (isStoryMode)
 		{
 			switch (songName)
@@ -105,7 +100,8 @@ class PhillyBlazin extends BaseStage
 						game.endingSong = true;
 						inCutscene = true;
 						canPause = false;
-						FlxTransitionableState.skipNextTransIn = true;
+						// FlxTransitionableState not available — skip via game flag
+						game.skipNextTransIn = true;
 						FlxG.camera.visible = false;
 						camHUD.visible = false;
 						game.startVideo('blazinCutscene');
@@ -113,7 +109,7 @@ class PhillyBlazin extends BaseStage
 			}
 		}
 	}
-	
+
 	override function createPost()
 	{
 		// Instantiate the note-handler objects
@@ -138,18 +134,16 @@ class PhillyBlazin extends BaseStage
 			if(character == null) continue;
 			character.color = 0xFF888888;
 		}
-		
 
 		var unspawnNotes:Array<Note> = cast game.unspawnNotes;
 		for (note in unspawnNotes)
 		{
 			if(note == null) continue;
-
-			//override animations for note types
 			note.noAnimation = true;
 			note.noMissAnimation = true;
 		}
-		remove(dadGroup, true);
+		// remove() in 0.7.3 FlxGroup takes only 1 argument (no splice bool)
+		remove(dadGroup);
 		addBehindBF(dadGroup);
 	}
 
@@ -157,10 +151,39 @@ class PhillyBlazin extends BaseStage
 	{
 		//if(curBeat % 2 == 0) abot.beatHit();
 	}
-	
-	override function startSong()
+
+	// startSong, goodNoteHit, noteMiss, noteMissPress, opponentNoteHit are NOT in
+	// BaseStage in Psych 0.7.3. They are called directly from PlayState below.
+	// To wire them up, add to PlayState.hx inside the relevant functions:
+	//   if(Std.isOfType(stage, PhillyBlazin)) cast(stage, PhillyBlazin).onSongStart();
+	//   if(Std.isOfType(stage, PhillyBlazin)) cast(stage, PhillyBlazin).onGoodNoteHit(note);
+	//   etc.
+	// OR — if your BaseStage has these methods, add them back as overrides.
+
+	public function onSongStart()
 	{
-		
+		// nothing needed for Blazin on song start
+	}
+
+	public function onGoodNoteHit(note:Note)
+	{
+		rainTimeScale += 0.7;
+		if (picoHandler != null) picoHandler.noteHit(note);
+	}
+
+	public function onNoteMiss(note:Note)
+	{
+		if (picoHandler != null) picoHandler.noteMiss(note);
+	}
+
+	public function onNoteMissPress(direction:Int)
+	{
+		if (picoHandler != null) picoHandler.noteMissPress(direction);
+	}
+
+	public function onOpponentNoteHit(note:Note)
+	{
+		if (darnellHandler != null) darnellHandler.noteHit(note);
 	}
 
 	function setupRainShader()
@@ -189,7 +212,7 @@ class PhillyBlazin extends BaseStage
 			rainShader.update(elapsed * rainTimeScale);
 			rainTimeScale = FlxMath.lerp(0.02, Math.min(1, rainTimeScale), Math.exp(-elapsed / (1/3)));
 		}
-		
+
 		lightningTimer -= elapsed;
 		if (lightningTimer <= 0)
 		{
@@ -197,7 +220,7 @@ class PhillyBlazin extends BaseStage
 			lightningTimer = FlxG.random.float(7, 15);
 		}
 	}
-	
+
 	function applyLightning():Void
 	{
 		if(ClientPrefs.data.lowQuality || game.endingSong) return;
@@ -231,40 +254,10 @@ class PhillyBlazin extends BaseStage
 		else
 			lightning.x = FlxG.random.int(780, 900);
 
-		// Darken characters
 		FlxTween.color(boyfriend, LIGHTNING_FADE_DURATION, 0xFF606060, 0xFFDEDEDE);
 		FlxTween.color(dad, LIGHTNING_FADE_DURATION, 0xFF606060, 0xFFDEDEDE);
 		FlxTween.color(gf, LIGHTNING_FADE_DURATION, 0xFF606060, 0xFF888888);
-		
 
-		// Sound
 		FlxG.sound.play(Paths.soundRandom('lightning/Lightning', 1, 3));
-	}
-
-	// Note functions
-	
-	override function goodNoteHit(note:Note)
-	{
-		//trace('hit note! ${note.noteType}');
-		rainTimeScale += 0.7;
-		if (picoHandler != null) picoHandler.noteHit(note);
-	}
-	override function noteMiss(note:Note)
-	{
-		//trace('missed note!');
-		if (picoHandler != null) picoHandler.noteMiss(note);
-	}
-
-	override function noteMissPress(direction:Int)
-	{
-		//trace('misinput!');
-		if (picoHandler != null) picoHandler.noteMissPress(direction);
-	}
-
-	// Darnell Note functions
-	override function opponentNoteHit(note:Note)
-	{
-		//trace('opponent hit!');
-		if (darnellHandler != null) darnellHandler.noteHit(note);
 	}
 }
