@@ -3,6 +3,7 @@ package states.stages;
 import openfl.filters.ShaderFilter;
 import shaders.RainShader;
 
+import flixel.addons.transition.FlxTransitionableState;
 import flixel.addons.display.FlxTiledSprite;
 
 import substates.GameOverSubstate;
@@ -27,9 +28,7 @@ class PhillyBlazin extends BaseStage
 
 	override function create()
 	{
-		// FlxTransitionableState is not available in Psych 0.7.3.
-		// Use PlayState's own skipNextTransOut flag instead.
-		game.skipNextTransOut = true;
+		FlxTransitionableState.skipNextTransOut = true;
 
 		function setupScale(spr:BGSprite)
 		{
@@ -92,7 +91,7 @@ class PhillyBlazin extends BaseStage
 			GameOverSubstate.endSoundName = 'gameOverEnd-pico';
 		if (_song.gameOverChar == null || _song.gameOverChar.trim().length < 1)
 			GameOverSubstate.characterName = 'pico-blazin';
-		// NOTE: GameOverSubstate.deathDelay does not exist in Psych 0.7.3 — removed.
+		// GameOverSubstate.deathDelay removed — not in Psych 0.7.3
 
 		setDefaultGF('nene');
 		precache();
@@ -107,7 +106,7 @@ class PhillyBlazin extends BaseStage
 						game.endingSong = true;
 						inCutscene = true;
 						canPause = false;
-						game.skipNextTransIn = true;
+						FlxTransitionableState.skipNextTransIn = true;
 						FlxG.camera.visible = false;
 						camHUD.visible = false;
 						game.startVideo('blazinCutscene');
@@ -124,31 +123,21 @@ class PhillyBlazin extends BaseStage
 		FlxG.camera.focusOn(camFollow.getPosition());
 		FlxG.camera.fade(FlxColor.BLACK, 1.5, true, null, true);
 
-		for (character in boyfriendGroup.members)
-		{
-			if (character == null) continue;
-			character.color = 0xFFDEDEDE;
-		}
-		for (character in dadGroup.members)
-		{
-			if (character == null) continue;
-			character.color = 0xFFDEDEDE;
-		}
-		for (character in gfGroup.members)
-		{
-			if (character == null) continue;
-			character.color = 0xFF888888;
-		}
+		// Tint characters — use the direct character references,
+		// not .members iteration, so the editor positions aren't touched.
+		if (boyfriend != null) boyfriend.color = 0xFFDEDEDE;
+		if (dad != null)       dad.color       = 0xFFDEDEDE;
+		if (gf != null)        gf.color        = 0xFF888888;
 
 		var unspawnNotes:Array<Note> = cast game.unspawnNotes;
 		for (note in unspawnNotes)
 		{
 			if (note == null) continue;
-			note.noAnimation    = true;
+			note.noAnimation     = true;
 			note.noMissAnimation = true;
 		}
 
-		// Psych 0.7.3: FlxGroup.remove() takes only one argument — no splice bool.
+		// Fix: remove() in Psych 0.7.3 BaseStage takes only 1 arg (no splice bool).
 		remove(dadGroup);
 		addBehindBF(dadGroup);
 	}
@@ -158,56 +147,28 @@ class PhillyBlazin extends BaseStage
 		// if (curBeat % 2 == 0) abot.beatHit();
 	}
 
-	// ── Note callbacks ────────────────────────────────────────────────────────
-	// BaseStage in Psych 0.7.3 does NOT have goodNoteHit / noteMiss /
-	// noteMissPress / opponentNoteHit / startSong as overrideable methods.
-	// These are plain public functions; call them from PlayState like:
-	//
-	//   In goodNoteHit(note):
-	//     if (Std.isOfType(stage, PhillyBlazin))
-	//         cast(stage, PhillyBlazin).stageGoodNoteHit(note);
-	//
-	//   In noteMiss(note):
-	//     if (Std.isOfType(stage, PhillyBlazin))
-	//         cast(stage, PhillyBlazin).stageNoteMiss(note);
-	//
-	//   In opponentNoteHit(note):
-	//     if (Std.isOfType(stage, PhillyBlazin))
-	//         cast(stage, PhillyBlazin).stageOpponentNoteHit(note);
-	//
-	//   In keyReleased / ghost-tap handler:
-	//     if (Std.isOfType(stage, PhillyBlazin))
-	//         cast(stage, PhillyBlazin).stageNoteMissPress(direction);
-	//
-	//   At song start (after countdown):
-	//     if (Std.isOfType(stage, PhillyBlazin))
-	//         cast(stage, PhillyBlazin).stageSongStart();
-	//
-	// Alternatively, if your BaseStage DOES declare these as virtual functions
-	// just swap 'public function' → 'override function' below.
-
-	public function stageSongStart():Void
+	override function startSong()
 	{
 		// nothing needed for Blazin on song start
 	}
 
-	public function stageGoodNoteHit(note:Note):Void
+	override function goodNoteHit(note:Note)
 	{
 		rainTimeScale += 0.7;
 		if (picoHandler != null) picoHandler.noteHit(note);
 	}
 
-	public function stageNoteMiss(note:Note):Void
+	override function noteMiss(note:Note)
 	{
 		if (picoHandler != null) picoHandler.noteMiss(note);
 	}
 
-	public function stageNoteMissPress(direction:Int):Void
+	override function noteMissPress(direction:Int)
 	{
 		if (picoHandler != null) picoHandler.noteMissPress(direction);
 	}
 
-	public function stageOpponentNoteHit(note:Note):Void
+	override function opponentNoteHit(note:Note)
 	{
 		if (darnellHandler != null) darnellHandler.noteHit(note);
 	}
@@ -257,16 +218,13 @@ class PhillyBlazin extends BaseStage
 
 		skyAdditive.visible = true;
 		skyAdditive.alpha   = 0.7;
-		FlxTween.tween(skyAdditive, {alpha: 0.0}, LIGHTNING_FULL_DURATION,
+		FlxTween.tween(skyAdditive, {alpha: 0.0}, LIGHTNING_FULL_DURATION, {onComplete: function(_)
 		{
-			onComplete: function(_)
-			{
-				skyAdditive.visible        = false;
-				lightning.visible          = false;
-				foregroundMultiply.visible = false;
-				additionalLighten.visible  = false;
-			}
-		});
+			skyAdditive.visible        = false;
+			lightning.visible          = false;
+			foregroundMultiply.visible = false;
+			additionalLighten.visible  = false;
+		}});
 
 		foregroundMultiply.visible = true;
 		foregroundMultiply.alpha   = 0.64;
