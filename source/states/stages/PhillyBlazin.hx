@@ -28,6 +28,10 @@ class PhillyBlazin extends BaseStage
 	override function create()
 	{
 		FlxTransitionableState.skipNextTransOut = true; //skip the original transition fade
+		W1Util.useWeekendFolder();
+
+		//load every image first (without GPU upload) so a missing/undecodable file is reported on screen instead of leaving a silent black stage
+		W1Util.reportMissing(W1Util.checkImages(['phillyBlazin/skyBlur', 'phillyBlazin/streetBlur', 'phillyBlazin/lightning', 'abot/stereoBG', 'abot/aBotViz']));
 		function setupScale(spr:BGSprite)
 		{
 			spr.scale.set(1.75, 1.75);
@@ -78,7 +82,7 @@ class PhillyBlazin extends BaseStage
 		abot = new ABotSpeaker(gfGroup.x, gfGroup.y + 550);
 		add(abot);
 		
-		if(ClientPrefs.data.shaders)
+		if(ClientPrefs.data.shaders && W1Util.USE_RAIN_SHADER)
 			setupRainShader();
 
 		var _song = PlayState.SONG;
@@ -96,7 +100,7 @@ class PhillyBlazin extends BaseStage
 			switch (songName)
 			{
 				case 'blazin':
-					setEndCallback(function()
+					if(W1Util.USE_VIDEOS) setEndCallback(function()
 					{
 						game.endingSong = true;
 						inCutscene = true;

@@ -49,6 +49,12 @@ class PhillyStreets extends BaseStage
 	var abot:ABotSpeaker;
 	override function create()
 	{
+		W1Util.useWeekendFolder();
+
+		//load every image first (without GPU upload) so a missing/undecodable file is reported on screen instead of leaving a silent black stage
+		var missingImages:Array<String> = W1Util.checkImages(['phillyStreets/phillySkybox','phillyStreets/phillySkyline','phillyStreets/phillyForegroundCity','phillyStreets/phillyConstruction','phillyStreets/phillyHighwayLights','phillyStreets/phillyHighwayLights_lightmap','phillyStreets/phillyHighway','phillyStreets/phillySmog','phillyStreets/phillyCars','phillyStreets/phillyTraffic','phillyStreets/phillyTraffic_lightmap','phillyStreets/phillyForeground','SpraycanPile','PicoBullet','spraypaintExplosionEZ','abot/stereoBG','abot/aBotViz']);
+		W1Util.reportMissing(missingImages);
+
 		if(!ClientPrefs.data.lowQuality)
 		{
 			var skyImage = Paths.image('phillyStreets/phillySkybox');
@@ -137,7 +143,7 @@ class PhillyStreets extends BaseStage
 		updateABotEye(true);
 		add(abot);
 		
-		if(ClientPrefs.data.shaders)
+		if(ClientPrefs.data.shaders && W1Util.USE_RAIN_SHADER)
 			setupRainShader();
 
 		var _song = PlayState.SONG;
@@ -154,7 +160,7 @@ class PhillyStreets extends BaseStage
 				case 'darnell':
 					if(!seenCutscene) setStartCallback(playDarnellVideo);
 				case '2hot':
-					setEndCallback(function()
+					if(W1Util.USE_VIDEOS) setEndCallback(function()
 					{
 						game.endingSong = true;
 						inCutscene = true;
@@ -212,6 +218,11 @@ class PhillyStreets extends BaseStage
 	function playDarnellVideo()
 	{
 		game.inCutscene = true;
+		if(!W1Util.USE_VIDEOS)
+		{
+			darnellCutscene(); //skip the .mp4 and run the in-engine cutscene directly
+			return;
+		}
 		#if VIDEOS_ALLOWED
 		// plays the video, then runs the in-engine cutscene instead of starting the countdown
 		game.startVideo('darnellCutscene', darnellCutscene);
