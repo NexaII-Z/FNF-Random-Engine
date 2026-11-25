@@ -132,6 +132,8 @@ class Character extends FlxSprite
 				skipDance = true;
 				loadMappedAnims();
 				playAnim("shoot1");
+			case 'pico-blazin', 'darnell-blazin':
+				skipDance = true;
 		}
 	}
 
@@ -149,7 +151,7 @@ class Character extends FlxSprite
 		updateHitbox();
 
 		if(!isAnimateAtlas)
-			frames = Paths.getAtlas(json.image);
+			frames = Paths.getMultiAtlas(json.image.split(','));
 		#if flxanimate
 		else
 		{
