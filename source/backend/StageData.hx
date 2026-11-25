@@ -67,9 +67,9 @@ class StageData {
 				case 'ugh' | 'guns' | 'stress':
 					stage = 'tank';
 				case '2hot' | 'darnell' | 'lit-up':
-					stage = 'phillyStreets'
+					stage = 'phillyStreets';
 				case 'blazin':
-					stage = 'phillyBlazin'
+					stage = 'phillyBlazin';
 				default:
 					stage = 'stage';
 			}
@@ -128,6 +128,10 @@ class StageData {
 				return 'schoolEvil';
 			case 'ugh' | 'guns' | 'stress':
 				return 'tank';
+			case '2hot' | 'darnell' | 'lit-up':
+				return 'phillyStreets';
+			case 'blazin':
+				return 'phillyBlazin';
 		}
 		return 'stage';
 	}
