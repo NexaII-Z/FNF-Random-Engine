@@ -124,6 +124,14 @@ class Paths
 				levelPath = getLibraryPathForce(file, 'week_assets', currentLevel);
 				if (OpenFlAssets.exists(levelPath, type))
 					return levelPath;
+
+				//also look in the plain assets/<level>/ folder (the .ipa flattens assets/week_assets/<level> into assets/<level>)
+				if (currentLevel != null && currentLevel.length > 0)
+				{
+					levelPath = 'assets/$currentLevel/$file';
+					if (OpenFlAssets.exists(levelPath, type))
+						return levelPath;
+				}
 			}
 		}
 
@@ -309,6 +317,13 @@ class Paths
 				levelPath = getLibraryPathForce(key, 'week_assets', currentLevel);
 				if (FileSystem.exists(levelPath))
 					return File.getContent(levelPath);
+
+				if (currentLevel != null && currentLevel.length > 0)
+				{
+					levelPath = 'assets/$currentLevel/$key';
+					if (FileSystem.exists(levelPath))
+						return File.getContent(levelPath);
+				}
 			}
 		}
 		#end
