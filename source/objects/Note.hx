@@ -33,150 +33,11 @@ typedef NoteSplashData = {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  NoteHoldCover
-//  Hold glow effect that plays over a sustain note while it is being held.
-//  No RGB — the sprite sheet provides its own colors.
-//
-//  Atlas files go in:   shared/images/noteHoldCovers/
-//    purple.png + purple.xml   (direction 0 – left)
-//    blue.png   + blue.xml     (direction 1 – down)
-//    green.png  + green.xml    (direction 2 – up)
-//    red.png    + red.xml      (direction 3 – right)
-//
-//  Required animation prefixes inside each atlas:
-//    holdCoverStart  → plays once when the hold begins
-//    holdCover       → loops while the note is held
-//    holdCoverEnd    → plays once when released / missed, then hides itself
-// ─────────────────────────────────────────────────────────────────────────────
-class NoteHoldCover extends FlxSpriteGroup
-{
-	static inline var FRAMERATE:Int      = 24;
-	static inline var FOLDER:String      = 'noteHoldCovers/';
-	static final DIR_NAMES:Array<String> = ['purple', 'blue', 'green', 'red'];
-
-	public var glow:FlxSprite;
-	public var holding:Bool = false;
-
-	public function new(direction:Int = 0)
-	{
-		super(0, 0);
-
-		glow = new FlxSprite();
-		glow.antialiasing = ClientPrefs.data.antialiasing;
-
-		var dirName   = DIR_NAMES[direction % DIR_NAMES.length];
-		var atlasPath = FOLDER + dirName;
-
-		if (Paths.fileExists('images/$atlasPath.png', IMAGE))
-		{
-			glow.frames = Paths.getSparrowAtlas(atlasPath);
-			glow.animation.addByPrefix('holdStart', 'holdCoverStart', FRAMERATE, false);
-			glow.animation.addByPrefix('holdLoop',  'holdCover',      FRAMERATE, true);
-			glow.animation.addByPrefix('holdEnd',   'holdCoverEnd',   FRAMERATE, false);
-			glow.animation.finishCallback = _onAnimFinished;
-		}
-		else
-		{
-			// Atlas missing — stay invisible so nothing crashes.
-			glow.visible = false;
-		}
-
-		add(glow);
-	}
-
-	/** Call when the player first presses and starts holding. */
-	public function playStart():Void
-	{
-		holding      = true;
-		visible      = true;
-		glow.visible = true;
-		glow.setPosition(x, y);
-		if (glow.animation.getByName('holdStart') != null)
-			glow.animation.play('holdStart', true);
-		else if (glow.animation.getByName('holdLoop') != null)
-			glow.animation.play('holdLoop', true);
-	}
-
-	/** Call every frame while the note is still held (after start anim finishes). */
-	public function playContinue():Void
-	{
-		if (glow.animation.curAnim != null
-		 && glow.animation.curAnim.name == 'holdLoop') return; // already looping
-		if (glow.animation.getByName('holdLoop') != null)
-			glow.animation.play('holdLoop', true);
-	}
-
-	/** Call when the player releases or misses the sustain. */
-	public function playEnd():Void
-	{
-		holding = false;
-		if (glow.animation.getByName('holdEnd') != null)
-			glow.animation.play('holdEnd', true);
-		else
-			kill(); // no end anim — just disappear
-	}
-
-	function _onAnimFinished(animName:String):Void
-	{
-		if (animName == 'holdStart')
-			playContinue();
-		else if (animName == 'holdEnd')
-		{
-			visible = false;
-			kill();
-		}
-	}
-
-	override function update(elapsed:Float)
-	{
-		super.update(elapsed);
-		// Keep glow sprite synced to the group's position.
-		glow.setPosition(x, y);
-	}
-
-	override function kill():Void
-	{
-		super.kill();
-		visible      = false;
-		holding      = false;
-		if (glow != null) glow.visible = false;
-	}
-
-	override function revive():Void
-	{
-		super.revive();
-		visible = true;
-		if (glow != null) glow.visible = true;
-	}
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 //  Note
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * The note object used as a data structure to spawn and manage notes.
- *
- * Hold covers:
- *   When the player starts holding a sustain note, call:
- *     note.spawnHoldCover(yourLayerGroup);
- *   When the player releases or misses:
- *     note.killHoldCover();
- *   followStrumNote() syncs cover position automatically every frame.
- *
- * PlayState wiring (minimal additions needed):
- *
- *   1. Add a layer group in create() (renders above sustains, below splashes):
- *        var holdCoverLayer:FlxSpriteGroup;
- *        holdCoverLayer = new FlxSpriteGroup();
- *        add(holdCoverLayer);
- *
- *   2. In goodNoteHit(note):
- *        if (note.isSustainNote && note.mustPress && !note.tooLate)
- *            note.spawnHoldCover(holdCoverLayer);
- *
- *   3. In noteMiss(note) and key-release handler:
- *        if (note.isSustainNote) note.killHoldCover();
 **/
 class Note extends FlxSprite
 {
@@ -270,7 +131,6 @@ class Note extends FlxSprite
 
 	// ── Hold cover ────────────────────────────────────────────────────────────
 	/** The active hold-cover effect for this sustain note. */
-	public var holdCover:NoteHoldCover = null;
 
 	// ─────────────────────────────────────────────────────────────────────────
 
@@ -551,49 +411,6 @@ class Note extends FlxSprite
 		animation.addByPrefix(name, prefix, framerate, doLoop);
 	}
 
-	// ── Hold cover API ────────────────────────────────────────────────────────
-
-	/**
-	 * Spawns a hold cover effect on this sustain note.
-	 * Call from PlayState when the player starts holding the note.
-	 * @param layer  The FlxSpriteGroup to add the cover to (e.g. holdCoverLayer).
-	 */
-	public function spawnHoldCover(layer:FlxSpriteGroup):Void
-	{
-		if (inEditor || !isSustainNote || holdCover != null) return;
-
-		var cover       = new NoteHoldCover(noteData);
-		cover.x         = x;
-		cover.y         = y;
-		layer.add(cover);
-		holdCover       = cover;
-		cover.playStart();
-	}
-
-	/**
-	 * Keeps the cover sprite glued to the note's current position.
-	 * Called automatically inside followStrumNote() — no manual call needed.
-	 */
-	public function updateHoldCoverPosition():Void
-	{
-		if (holdCover == null || !holdCover.alive) return;
-		holdCover.x = x;
-		holdCover.y = y;
-	}
-
-	/**
-	 * Triggers the end animation on the active cover and clears the reference.
-	 * Call from PlayState when the player releases or misses the sustain.
-	 */
-	public function killHoldCover():Void
-	{
-		if (holdCover == null) return;
-		holdCover.playEnd();
-		holdCover = null;
-	}
-
-	// ─────────────────────────────────────────────────────────────────────────
-
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -623,12 +440,6 @@ class Note extends FlxSprite
 
 	override public function destroy()
 	{
-		// Clean up cover if note is destroyed mid-hold.
-		if (holdCover != null)
-		{
-			holdCover.kill();
-			holdCover = null;
-		}
 		super.destroy();
 		_lastValidChecked = '';
 	}
@@ -658,9 +469,6 @@ class Note extends FlxSprite
 				y -= (frameHeight * scale.y) - (Note.swagWidth / 2);
 			}
 		}
-
-		// Keep hold cover glued to the note's screen position.
-		updateHoldCoverPosition();
 	}
 
 	public function clipToStrumNote(myStrum:StrumNote)

@@ -40,6 +40,9 @@ class CreditsState extends MusicBeatState
 
 		#if mobile
 		var defaultListMobile:Array<Array<String>> = [ //Name - Icon name - Description - Link - BG Color
+			['Nexus Engine Team'],
+			['NexaII-Z', 'nexaii', 'Owner and Developer of Nexus Engine', 'https://github.com/NexaII-Z', '8B0000'],
+			[''],
 			['Template Team'],
 			['Ali Alafandy', 'alafandy', 'Templator of Psych Engine', 'https://youtube.com/@alialafandy', '000080'],
 			[''],
@@ -76,6 +79,9 @@ class CreditsState extends MusicBeatState
 		];
 		#else
 		var defaultList:Array<Array<String>> = [ //Name - Icon name - Description - Link - BG Color
+			['Nexus Engine Team'],
+			['NexaII-Z', 'nexaii', 'Owner and Developer of Nexus Engine', 'https://github.com/NexaII-Z', '8B0000'],
+			[''],
 			['Template Team'],
 			['Ali Alafandy', 'alafandy', 'Templator of Psych Engine', 'https://youtube.com/@alialafandy', '000080'],
 			[''],

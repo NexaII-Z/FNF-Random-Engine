@@ -24,11 +24,11 @@ class BetaState extends MusicBeatState
 
 		if (controls.mobileC)
 		{
-			guh = "Also, This Engine Is in Beta\nWhich Means You Will Find Some Bugs While Playing.\nYou can report them on the Random Engine Github or Gamebanana.\nPress A To Continue.";
+			guh = "Also, This Engine Is in Beta\nWhich Means You Will Find Some Bugs While Playing.\nYou can report them on the Nexus Engine Github or Gamebanana.\nPress A To Continue.";
 		}
 		else
 		{
-			guh = "Also, This Engine Is in Beta\nWhich Means You Will Find Some Bugs While Playing.\nYou can report them on the Random Engine Github or Gamebanana.\nPress Enter To Continue.";
+			guh = "Also, This Engine Is in Beta\nWhich Means You Will Find Some Bugs While Playing.\nYou can report them on the Nexus Engine Github or Gamebanana.\nPress Enter To Continue.";
 		}
 
 		warnText = new FlxText(0, 0, FlxG.width, guh, 32);

@@ -24,11 +24,11 @@ class OutdatedState extends MusicBeatState
 
 		if (controls.mobileC)
 		{
-			guh = "Sup bro, looks like you're running an outdated version of Psych Engine (" + MainMenuState.psychEngineVersion + "),\nplease update to " + TitleState.updateVersion + "!\nPress B to proceed anyway.\n\nThank you for using the Port!";
+			guh = "Sup bro, looks like you're running an outdated version of Nexus Engine (" + MainMenuState.psychEngineVersion + "),\nplease update to " + TitleState.updateVersion + "!\nPress B to proceed anyway.\n\nThank you for using the Port!";
 		}
 		else
 		{
-			guh = "Sup bro, looks like you're running an outdated version of Psych Engine (" + MainMenuState.psychEngineVersion + "),\nplease update to " + TitleState.updateVersion + "!\nPress ESCAPE to proceed anyway.\n\nThank you for using the Port!";
+			guh = "Sup bro, looks like you're running an outdated version of Nexus Engine (" + MainMenuState.psychEngineVersion + "),\nplease update to " + TitleState.updateVersion + "!\nPress ESCAPE to proceed anyway.\n\nThank you for using the Port!";
 		}
 
 		warnText = new FlxText(0, 0, FlxG.width, guh, 32);
@@ -48,7 +48,7 @@ class OutdatedState extends MusicBeatState
 			if (controls.ACCEPT)
 			{
 				leftState = true;
-				CoolUtil.browserLoad("https://github.com/AliAlafandy/FNF-PsychEngine-0.7.3-Template/releases");
+				CoolUtil.browserLoad("https://github.com/NexaII-Z/FNF-Random-Engine/releases");
 			}
 			else if (controls.BACK)
 			{

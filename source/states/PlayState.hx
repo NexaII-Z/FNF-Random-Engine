@@ -167,6 +167,8 @@ class PlayState extends MusicBeatState
 	public var opponentStrums:FlxTypedGroup<StrumNote>;
 	public var playerStrums:FlxTypedGroup<StrumNote>;
 	public var grpNoteSplashes:FlxTypedGroup<NoteSplash>;
+	public var grpHoldCovers:FlxTypedGroup<NoteHoldCover>;
+	public var holdCovers:Array<NoteHoldCover> = [];
 
 	public var camZooming:Bool = false;
 	public var camZoomingMult:Float = 1;
@@ -314,6 +316,7 @@ class PlayState extends MusicBeatState
 		FlxG.cameras.add(camOther, false);
 		FlxG.cameras.add(luaTpadCam, false);
 		grpNoteSplashes = new FlxTypedGroup<NoteSplash>();
+		grpHoldCovers = new FlxTypedGroup<NoteHoldCover>();
 
 		persistentUpdate = true;
 		persistentDraw = true;
@@ -397,8 +400,8 @@ class PlayState extends MusicBeatState
 			case 'school': new states.stages.School(); //Week 6 - Senpai, Roses
 			case 'schoolEvil': new states.stages.SchoolEvil(); //Week 6 - Thorns
 			case 'tank': new states.stages.Tank(); //Week 7 - Ugh, Guns, Stress
-			case 'phillyStreets': new states.stages.PhillyStreets(); //Weekend 1 - Darnell, Lit Up, 2Hot
-			case 'phillyBlazin': new states.stages.PhillyBlazin(); //Weekend 1 - Blazin
+			case 'phillyStreets' | 'streets': new states.stages.PhillyStreets(); //Weekend 1 - Darnell, Lit Up, 2Hot
+			case 'phillyBlazin' | 'streetsBlazin': new states.stages.PhillyBlazin(); //Weekend 1 - Blazin
 		}
 
 		if(isPixelStage) {
@@ -520,6 +523,13 @@ class PlayState extends MusicBeatState
 
 		generateSong(SONG.song);
 
+		for (lane in 0...4)
+		{
+			var cover:NoteHoldCover = new NoteHoldCover(lane);
+			holdCovers[lane] = cover;
+			grpHoldCovers.add(cover);
+		}
+		noteGroup.add(grpHoldCovers);
 		noteGroup.add(grpNoteSplashes);
 
 		camFollow = new FlxObject(0, 0, 1, 1);
@@ -2765,6 +2775,7 @@ class PlayState extends MusicBeatState
 			spr.playAnim('static');
 			spr.resetAnim = 0;
 		}
+		stopHoldCover(key);
 		callOnScripts('onKeyRelease', [key]);
 	}
 
@@ -2863,6 +2874,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function noteMiss(daNote:Note):Void { //You didn't hit the key and let it go offscreen, also used by Hurt Notes
+		if (daNote.isSustainNote) stopHoldCover(daNote.noteData);
 		//Dupe note remove
 		notes.forEachAlive(function(note:Note) {
 			if (daNote != note && daNote.mustPress && daNote.noteData == note.noteData && daNote.isSustainNote == note.isSustainNote && Math.abs(daNote.strumTime - note.strumTime) < 1)
@@ -3007,6 +3019,19 @@ class PlayState extends MusicBeatState
 		if (!note.isSustainNote) invalidateNote(note);
 	}
 
+	public function startHoldCover(lane:Int):Void
+	{
+		if (lane < 0 || lane >= holdCovers.length) return;
+		var strum:StrumNote = playerStrums.members[lane];
+		if (strum != null) holdCovers[lane].start(strum);
+	}
+
+	public function stopHoldCover(lane:Int):Void
+	{
+		if (lane < 0 || lane >= holdCovers.length) return;
+		holdCovers[lane].stop();
+	}
+
 	public function goodNoteHit(note:Note):Void
 	{
 		if(note.wasGoodHit) return;
@@ -3074,6 +3099,14 @@ class PlayState extends MusicBeatState
 		}
 		else strumPlayAnim(false, Std.int(Math.abs(note.noteData)), Conductor.stepCrochet * 1.25 / 1000 / playbackRate);
 		vocals.volume = 1;
+
+		if (note.isSustainNote || note.sustainLength > 0)
+		{
+			if (note.isSustainNote && note.animation.curAnim != null && note.animation.curAnim.name.endsWith('end'))
+				stopHoldCover(leData); //last piece of the hold: play the end animation
+			else
+				startHoldCover(leData);
+		}
 
 		if (!note.isSustainNote)
 		{

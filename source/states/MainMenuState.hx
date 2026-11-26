@@ -10,7 +10,7 @@ import options.OptionsState;
 class MainMenuState extends MusicBeatState
 {
 	public static var psychEngineVersion:String  = '0.7.3';
-	public static var randomEngineVersion:String = '0.1.0';
+	public static var nexusEngineVersion:String = '0.1.0';
 	public static var curSelected:Int = 0;
 
 	// Left column items
@@ -101,17 +101,17 @@ class MainMenuState extends MusicBeatState
 		}
 
 		// Version texts
-		var psychVer = new FlxText(12, FlxG.height - 64, 0, "Psych Engine v" + psychEngineVersion, 16);
+		var psychVer = new FlxText(12, FlxG.height - 64, 0, "Based on Psych Engine v" + psychEngineVersion, 16);
 		psychVer.scrollFactor.set();
 		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT,
 			FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(psychVer);
 
-		var randomVer = new FlxText(12, FlxG.height - 44, 0, "Random Engine v" + randomEngineVersion, 16);
-		randomVer.scrollFactor.set();
-		randomVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT,
+		var nexusVer = new FlxText(12, FlxG.height - 44, 0, "Nexus Engine v" + nexusEngineVersion, 16);
+		nexusVer.scrollFactor.set();
+		nexusVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT,
 			FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		add(randomVer);
+		add(nexusVer);
 
 		var fnfVer = new FlxText(12, FlxG.height - 24, 0,
 			"Friday Night Funkin' v" + Application.current.meta.get('version'), 16);
