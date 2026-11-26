@@ -1,53 +1,62 @@
-# Friday Night Funkin' - Random Engine
+NEXUS Engine
 
-A Modding Engine That Adds Uniqe Featuers To The Game.
+A Friday Night Funkin’ engine with custom features, tools, editors, and improvements.
 
-# Warning: 
-This Engine Is Solo Dev, Poor Dev...
+About
 
-# Features
+NEXUS Engine is a modified Friday Night Funkin’ Psych Engine focused on adding new features and improving the modding experience.
 
-# Random Engine Features
-* New Stage Editor %100
-* Weekend1 %75
-* New Ui For States [no editors] %34
-* Pico Mixes %0
-* Erect + Nightmare Mixes %0
-* V-slice Chart Reader %0
-* Psych Chart To V-slice Chart Converter
-* Play Vid When Gameover in chart editor is now a thing! Instead Of Scripting. %0
-* New Main Menu UI %100
-* Freeplay added character Select %0
-* NoteSkin Selector (ui refrence by https://gamebanana.com/members/2112708) %100
-* alot coming in the feature
+The project includes custom editors, redesigned interfaces, additional gameplay features, and mobile support.
 
-## Random Credits:
-* NexaII-Z - Random Engine Owner.
-* Ali Alafandy - Templator.
+Warning
 
-## Mobile Credits:
-* Lily - Head Porter and linc_luajit-rewriten.
-* Karim - Second Porter.
-* Moxie - Helper.
+This project is mainly developed by one person. Updates and features may take time, and development progress can vary.
 
-### Mobile Special Thanks
-* MAJigsaw77 - Author of old mobile controls, new storage stuff and FlxRuntimeShader.
-* FutureDorito - iOS Helper.
-* Sector - Touch Pad Artist.
+Features
 
-## Psych Credits:
-* Shadow Mario - Programmer
-* Riveren - Artist
+NEXUS Engine Features
 
-### Psych Special Thanks
-* bbpanzu - Ex-Programmer
-* Yoshubs - Ex-Programmer
-* SqirraRNG - Crash Handler and Base code for Chart Editor's Waveform
-* KadeDev - Fixed some cool stuff on Chart Editor and other PRs
-* iFlicky - Composer of Psync and Tea Time, also made the Dialogue Sounds
-* PolybiusProxy - .MP4 Video Loader Library (hxCodec)
-* Keoiki - Note Splash Animations
-* Smokey - Sprite Atlas Support
-* Nebula the Zorua - some Lua reworks
-* superpowers04 - LUA JIT Fork
-_____________________________________
+Feature	Progress
+New Stage Editor	100%
+Weekend 1	75%
+New UI for States (excluding editors)	34%
+Pico Mixes	0%
+Erect and Nightmare Mixes	0%
+V-Slice Chart Reader	0%
+Psych Chart to V-Slice Chart Converter	0%
+Game Over Videos in Chart Editor	0%
+New Main Menu UI	100%
+Freeplay Character Selection	0%
+Note Skin Selector	100%
+
+More features are planned.
+
+Credits
+
+* NexaII-Z - NEXUS Engine Owner and Developer.
+
+Psych Engine Credits
+
+* Shadow Mario - Programmer.
+* Riveren - Artist.
+
+Psych Engine Special Thanks
+
+* bbpanzu - Former Programmer.
+* Yoshubs - Former Programmer.
+* SqirraRNG - Crash Handler and Chart Editor Waveform Base Code.
+* KadeDev - Chart Editor Improvements and Other Pull Requests.
+* iFlicky - Composer of Psync and Tea Time, Dialogue Sounds.
+* PolybiusProxy - MP4 Video Loader Library (hxCodec).
+* Keoiki - Note Splash Animations.
+* Smokey - Sprite Atlas Support.
+* Nebula the Zorua - Lua Reworks.
+* superpowers04 - LuaJIT Fork.
+
+⸻
+
+Development
+
+NEXUS Engine is still in development. Features may change, get improved, or be delayed as development continues.
+
+Thanks to everyone who has contributed to the project and supported its development.
